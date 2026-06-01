@@ -101,6 +101,26 @@ class HTTP3622(SELHTTP):
             self.gateway_logged_in = False
             del self.gateway
 
+    def getcfg(self) -> str | None:
+        # Just in case, GET the FileManagement console
+        self.get("/FileManagement.sel")
+
+        self.post(
+            urljoin(self.url, "/FileManagement.sel"),
+            data={
+                "Password": "Gibe!123",
+                "PasswordConfirm": "Gibe!123",
+                "submit": "Generate",
+            },
+        )
+
+        self.log.info("Sent a generation request. Awaiting completion...")
+
+        # TODO: find a suitable way of awaiting the completion of this task.
+        # Threading?
+
+        return None
+
     def disconnect(self) -> None:
         if self.gateway_logged_in and self.gateway == "SEL-3622":
             self.logout()
