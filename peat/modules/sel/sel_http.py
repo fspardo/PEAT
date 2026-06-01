@@ -1831,6 +1831,7 @@ class SELHTTP(HTTP):
 
         self.gateway_logged_in = True
 
+        # We can perform an explicit check for the device's FID.
         idx_soup = self.gen_soup(resp.text)
 
         fid = idx_soup.find("td", {"id": "fid"})
