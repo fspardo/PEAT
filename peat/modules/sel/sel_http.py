@@ -1834,6 +1834,9 @@ class SELHTTP(HTTP):
         return True
 
     def validate_3622_fid(self) -> bool:
+        """
+        Validate that the SEL-3622 is, in fact, an SEL-3622
+        """
         assert self.gateway_logged_in
 
         idx = self.get("/index.sel")
@@ -1857,6 +1860,9 @@ class SELHTTP(HTTP):
         return True
 
     def logout_3622(self):
+        """
+        Log out of an SEL-3622 gateway
+        """
         if self.gateway_logged_in:
             self.get("/Logout.sel")
             self.gateway_logged_in = False
