@@ -1,0 +1,99 @@
+"""
+SEL HTTP module specialized for the SEL-3622
+
+Author: Francisco Santana <fsantan@sandia.gov>
+"""
+
+from urllib.parse import urljoin
+
+from ..sel_http import SELHTTP
+
+
+class HTTP3622(SELHTTP):
+    """
+    Class specialization of `SELHTTP` for the SEL-3622.
+    """
+    def login_3622(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
+        """
+        Attempt to log in using the SEL-3622 Gateway's web interface.
+
+        The SEL-3622 differs from the SEL-3620 quite a bit. Must be the Ozempic.
+        """
+
+        self.protocol = "https"
+        # We only need login data and the Submit button
+        login_data = {
+            "Username": user,
+            "Password": passwd,
+            "submit": "Submit",
+        }
+
+        # Voodoo magicks be here
+        # The 3622 seems to complain if you don't first GET Login.sel.
+        if not self.get("/Login.sel", "https"):
+            self.log.error("Could not get login page")
+            return False
+
+        url = urljoin(self.url, "/Login.sel")
+        resp = self.post(url, data=login_data)
+
+        # Null response means no host
+        if not resp:
+            self.log.warning("Received no response.")
+            return False
+
+        # Non-200 response indicates an error
+        if resp.status_code != 200:
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            return False
+
+        # Log-in failure
+        # This more specific query will yield fewer false positives
+        if "<!-- # ERROR MESSAGES # -->" in resp.text:
+            self.log.error("Failed to log in")
+
+        self.gateway_logged_in = True
+        self.gateway = "SEL-3622"
+
+        return True
+
+    def validate_3622_fid(self) -> bool:
+        """
+        Validate that the SEL-3622 is, in fact, an SEL-3622
+        """
+        assert self.gateway_logged_in
+        assert self.gateway == "SEL-3622"
+
+        idx = self.get("/index.sel")
+        if not idx:
+            self.log.error("Could not get /index.sel")
+            return False
+
+        # We can perform an explicit check for the device's FID.
+        idx_soup = self.gen_soup(idx.text)
+
+        fid = idx_soup.find("td", {"id": "fid"})
+        if not fid:
+            self.log.error("Could not get fid field")
+            return False
+        fid_txt = fid.get_text()
+
+        if not "SEL-3622" in fid_txt:
+            self.log.error("This device is not an SEL-3622")
+            return False
+
+        return True
+
+    def logout_3622(self):
+        """
+        Log out of an SEL-3622 gateway
+        """
+        if self.gateway_logged_in and self.gateway == "SEL-3622":
+            self.get("/Logout.sel")
+            self.gateway_logged_in = False
+            del self.gateway
+
+    def disconnect(self) -> None:
+        if self.gateway_logged_in and self.gateway == "SEL-3622":
+            self.logout_3622()
+        return super().disconnect()
