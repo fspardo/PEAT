@@ -1790,6 +1790,54 @@ class SELHTTP(HTTP):
 
     # -------------------- Gateway Web pages --------------------
 
+    def login_3622(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
+        """
+        Attempt to log in using the SEL-3622 Gateway's web interface.
+
+        The SEL-3622 differs from the SEL-3620 quite a bit. Must be the Ozempic.
+        """
+
+        self.protocol = "https"
+        # We only need login data and the Submit button
+        login_data = {
+            "Username": user,
+            "Password": passwd,
+            "submit": "Submit",
+        }
+
+        # Voodoo magicks be here
+        # The 3622 seems to complain if you don't first GET Login.sel.
+        if not self.get("/Login.sel", "https"):
+            self.log.error("Could not get login page")
+            return False
+
+        url = urljoin(self.url, "/Login.sel")
+        resp = self.post(url, data=login_data)
+
+        # Null response means no host
+        if not resp:
+            self.log.warning("Received no response.")
+            return False
+
+        # Non-200 response indicates an error
+        if resp.status_code != 200:
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            return False
+
+        # Log-in failure
+        # This more specific query will yield fewer false positives
+        if "<!-- # ERROR MESSAGES # -->" in resp.text:
+            self.log.error("Failed to log in")
+
+        self.gateway_logged_in = True
+
+        return True
+
+    def logout_3622(self):
+        if self.gateway_logged_in:
+            self.get("/Logout.sel")
+            self.gateway_logged_in = False
+
     def login_3620(
         self,
         user: str = "admin",
