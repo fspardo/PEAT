@@ -5,14 +5,12 @@ The docs call this a "small form-factor" version of the 3620,
 but the differences seem to go deeper than calling it the
 3620's dwarf brother.
 
-Authors
-
-- Francisco Santana
+Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
-from ..sel_http import SELHTTP
+from .http import HTTP3622 as SELHTTP
 
 
 class SEL3622(DeviceModule):
