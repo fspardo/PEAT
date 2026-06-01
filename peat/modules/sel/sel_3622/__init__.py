@@ -53,8 +53,15 @@ class SEL3622(DeviceModule):
             user = dev._cache["verified_web_user"]
             passwd = dev._cache["verified_web_pass"]
         else:
-            user = cls.default_options["web"]["user"]
-            passwd = cls.default_options["web"]["pass"]
+            if dev.options["web"]["user"]:
+                user = dev.options["web"]["user"]
+                passwd = dev.options["web"]["pass"]
+
+                assert isinstance(user, str)
+                assert isinstance(passwd, str)
+            else:
+                user = cls.default_options["web"]["user"]
+                passwd = cls.default_options["web"]["pass"]
 
         cls.log.debug(f"Attempting log-in as {user}/{passwd}")
         logged_in = session.login_3622(user, passwd)
