@@ -14,7 +14,22 @@ from .sel_http import SELHTTP
 class SEL3622(DeviceModule):
     """
     SEL-3622 Ethernet Security Gateway.
+
+    AKA the SEL-3620 Slim.
     """
+
+    device_type = "Gateway"
+    vendor_id = "SEL"
+    vendor_name = "Schweitzer Engineering Laboratories"
+    brand = "SEL"
+    module_aliases = [ 'sel-3622', '3622', 'sel-3620-slim', '3620-slim' ]
+    default_options = {
+        'web': {
+            'user': 'admin',
+            'pass': 'IAmAdmin',
+            'users': []
+        }
+    }
 
     def _verify_http(self, dev: DeviceData) -> bool:
         """
