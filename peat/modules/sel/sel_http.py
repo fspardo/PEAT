@@ -1837,6 +1837,9 @@ class SELHTTP(HTTP):
         assert self.gateway_logged_in
 
         idx = self.get("/index.sel")
+        if not idx:
+            self.log.error("Could not get /index.sel")
+            return False
 
         # We can perform an explicit check for the device's FID.
         idx_soup = self.gen_soup(idx.text)
