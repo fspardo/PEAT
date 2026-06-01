@@ -13,7 +13,8 @@ class HTTP3622(SELHTTP):
     """
     Class specialization of `SELHTTP` for the SEL-3622.
     """
-    def login_3622(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
+
+    def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
 
@@ -44,7 +45,9 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            self.log.error(
+                f"Login failed: received non-200 response ({resp.status_code})."
+            )
             return False
 
         # Log-in failure
@@ -57,7 +60,7 @@ class HTTP3622(SELHTTP):
 
         return True
 
-    def validate_3622_fid(self) -> bool:
+    def validate_fid(self) -> bool:
         """
         Validate that the SEL-3622 is, in fact, an SEL-3622
         """
@@ -84,7 +87,7 @@ class HTTP3622(SELHTTP):
 
         return True
 
-    def logout_3622(self):
+    def logout(self):
         """
         Log out of an SEL-3622 gateway
         """
@@ -95,5 +98,5 @@ class HTTP3622(SELHTTP):
 
     def disconnect(self) -> None:
         if self.gateway_logged_in and self.gateway == "SEL-3622":
-            self.logout_3622()
+            self.logout()
         return super().disconnect()
