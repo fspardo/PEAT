@@ -1831,8 +1831,15 @@ class SELHTTP(HTTP):
 
         self.gateway_logged_in = True
 
+        return True
+
+    def validate_3622_fid(self) -> bool:
+        assert self.gateway_logged_in
+
+        idx = self.get("/index.sel")
+
         # We can perform an explicit check for the device's FID.
-        idx_soup = self.gen_soup(resp.text)
+        idx_soup = self.gen_soup(idx.text)
 
         fid = idx_soup.find("td", {"id": "fid"})
         if not fid:
