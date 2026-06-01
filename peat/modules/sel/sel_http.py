@@ -1831,6 +1831,18 @@ class SELHTTP(HTTP):
 
         self.gateway_logged_in = True
 
+        idx_soup = self.gen_soup(resp.text)
+
+        fid = idx_soup.find("td", {"id": "fid"})
+        if not fid:
+            self.log.error("Could not get fid field")
+            return False
+        fid_txt = fid.get_text()
+
+        if not "SEL-3622" in fid_txt:
+            self.log.error("This device is not an SEL-3622")
+            return False
+
         return True
 
     def logout_3622(self):
