@@ -42,7 +42,6 @@ class SEL3622(DeviceModule):
         cls.log.debug(f"Verifying on port {port} with timeout {timeout}")
 
         session = SELHTTP(dev.ip, port, timeout)
-        logged_in = False
 
         user = None
         passwd = None
