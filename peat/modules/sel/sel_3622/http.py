@@ -58,17 +58,18 @@ class HTTP3622(SELHTTP):
 
         return True
 
-    def validate_fid(self) -> bool:
+    def get_fid(self) -> str | None:
         """
-        Validate that the SEL-3622 is, in fact, an SEL-3622
+        Get the FID of the device. Typically, this contains the device model.
         """
+
         assert self.gateway_logged_in
         assert self.gateway == "SEL-3622"
 
         idx = self.get("/index.sel")
         if not idx:
             self.log.error("Could not get /index.sel")
-            return False
+            return None
 
         # We can perform an explicit check for the device's FID.
         idx_soup = self.gen_soup(idx.text)
@@ -76,10 +77,16 @@ class HTTP3622(SELHTTP):
         fid = idx_soup.find("td", {"id": "fid"})
         if not fid:
             self.log.error("Could not get fid field")
-            return False
-        fid_txt = fid.get_text()
+            return None
+        return fid.get_text()
 
-        if not "SEL-3622" in fid_txt:
+    def validate_fid(self) -> bool:
+        """
+        Validate that the SEL-3622 is, in fact, an SEL-3622
+        """
+        fid_txt = self.get_fid()
+
+        if not fid_txt or not "SEL-3622" in fid_txt:
             self.log.error("This device is not an SEL-3622")
             return False
 
