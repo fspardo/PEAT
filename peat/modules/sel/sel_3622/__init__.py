@@ -64,16 +64,19 @@ class SEL3622(DeviceModule):
                 passwd = cls.default_options["web"]["pass"]
 
         cls.log.debug(f"Attempting log-in as {user}/{passwd}")
-        logged_in = session.login_3622(user, passwd)
+        if not session.login_3622(user, passwd):
+            cls.log.error("Failed to log in to the device!")
+            return False
 
-        if logged_in:
+        if session.validate_3622_fid():
             cls.log.info("Success! This device is an SEL-3622!")
         else:
             cls.log.error("Failure!")
+            return False
 
         session.logout_3622()
 
-        return logged_in
+        return True
 
     @classmethod
     def _pull(cls, dev: DeviceData) -> bool:
