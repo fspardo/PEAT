@@ -68,6 +68,8 @@ class SELHTTP(HTTP):
     def disconnect(self) -> None:
         if self.rtac_logged_in and self._session:
             self.rtac_log_out()
+        elif self.gateway_logged_in and self.gateway == "SEL-3622":
+            self.logout_3622()
         super().disconnect()
 
     def login(
@@ -1830,6 +1832,7 @@ class SELHTTP(HTTP):
             self.log.error("Failed to log in")
 
         self.gateway_logged_in = True
+        self.gateway = "SEL-3622"
 
         return True
 
@@ -1838,6 +1841,7 @@ class SELHTTP(HTTP):
         Validate that the SEL-3622 is, in fact, an SEL-3622
         """
         assert self.gateway_logged_in
+        assert self.gateway == "SEL-3622"
 
         idx = self.get("/index.sel")
         if not idx:
@@ -1863,9 +1867,10 @@ class SELHTTP(HTTP):
         """
         Log out of an SEL-3622 gateway
         """
-        if self.gateway_logged_in:
+        if self.gateway_logged_in and self.gateway == "SEL-3622":
             self.get("/Logout.sel")
             self.gateway_logged_in = False
+            del self.gateway
 
     def login_3620(
         self,

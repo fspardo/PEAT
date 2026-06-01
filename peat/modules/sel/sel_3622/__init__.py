@@ -74,7 +74,7 @@ class SEL3622(DeviceModule):
             cls.log.error("Failure!")
             return False
 
-        session.logout_3622()
+        session.disconnect()
 
         return True
 
