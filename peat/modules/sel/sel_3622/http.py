@@ -101,15 +101,18 @@ class HTTP3622(SELHTTP):
             self.gateway_logged_in = False
             del self.gateway
 
-    def getcfg(self) -> str | None:
+    def prepcfg(self) -> str | None:
+        """
+        Prepare a configuration file download.
+        """
         # Just in case, GET the FileManagement console
         self.get("/FileManagement.sel")
 
         self.post(
             urljoin(self.url, "/FileManagement.sel"),
             data={
-                "Password": "Gibe!123",
-                "PasswordConfirm": "Gibe!123",
+                "Password": "Peater!1",
+                "PasswordConfirm": "Peater!1",
                 "submit": "Generate",
             },
         )
