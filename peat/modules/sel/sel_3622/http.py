@@ -49,12 +49,12 @@ class HTTP3622(SELHTTP):
         if not resp:
             self.log.error("Could not get login page")
             return False
-        
-        selssid = resp.cookies.get('SELSSID')
-        if not selssid: 
+
+        selssid = resp.cookies.get("SELSSID")
+        if not selssid:
             self.log.error("Did not get a session ID")
             return False
-        
+
         self.session_id = selssid
 
         resp = self.post(self.endpoint("login"), data=login_data)
