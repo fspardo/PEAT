@@ -16,3 +16,5 @@ ENDPOINTS = {
     "cert_import": "/X509_Import.sel",
     "confirm_deletion": "/ConfirmDeletion.sel",
 }
+
+__all__ = ["ENDPOINTS"]
