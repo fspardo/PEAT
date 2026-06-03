@@ -34,7 +34,7 @@ class SEL3622(DeviceModule):
         if cls.session:
             # TODO: determine how best to handle multiple devices
             return cls.session
-        
+
         port = dev.options["https"]["port"]
         timeout = dev.options["https"]["timeout"]
 
@@ -64,6 +64,7 @@ class SEL3622(DeviceModule):
             cls.log.error("Failed to log in to the device!")
             return None
         else:
+            cls.session = session
             return session
 
     @classmethod
@@ -95,7 +96,7 @@ class SEL3622(DeviceModule):
         """
         Pull data from the SEL 3622
         """
-        from .FileManagement import SystemSettingsPoller, SystemSettings
+        from .FileManagement import SystemSettings, SystemSettingsPoller
 
         cls.log.info(f"SEL/3622: Pulling information")
 
@@ -112,19 +113,33 @@ class SEL3622(DeviceModule):
             return False
 
         sys_settings = None
+
+        # Query once every 30 seconds, for a total of 300s (5m).
         for i in range(0, 10):
             cls.log.debug(f"Query {i + 1} of 10...")
             from time import sleep
 
-            sleep(10)
+            sleep(30)
             sys_settings = ssp.query()
             if sys_settings is SystemSettings:
+                cls.log.info("Pulled system configuration backup")
                 break
 
             if not sys_settings:
                 return False
 
-        return False
+        if not sys_settings is not SystemSettings:
+            cls.log.info("Pulling system configuration backup...")
+            sys_settings = ssp.query(force=True)
+            if sys_settings is not SystemSettings:
+                cls.log.error("Failed to pull the system configuration backup")
+                return False
+
+        cls.log.info("Pulled system configuration")
+
+        # TODO: export configuration file
+
+        return True
 
 
 # This seems to list the methods to be used to perform validation
