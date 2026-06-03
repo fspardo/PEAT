@@ -44,10 +44,18 @@ class HTTP3622(SELHTTP):
         }
 
         # Voodoo magicks be here
-        # The 3622 seems to complain if you don't first GET Login.sel.
-        if not self.get(ENDPOINTS["login"], "https", use_cache=False):
+        # Gets a session cookie
+        resp = self.get(ENDPOINTS["login"], "https", use_cache=False)
+        if not resp:
             self.log.error("Could not get login page")
             return False
+        
+        selssid = resp.cookies.get('SELSSID')
+        if not selssid: 
+            self.log.error("Did not get a session ID")
+            return False
+        
+        self.session_id = selssid
 
         resp = self.post(self.endpoint("login"), data=login_data)
 
