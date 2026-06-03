@@ -5,14 +5,27 @@ Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from urllib.parse import urljoin
+from bs4.element import Tag
 
 from ..sel_http import SELHTTP
+from .endpoints import ENDPOINTS
 
 
 class HTTP3622(SELHTTP):
     """
     Class specialization of `SELHTTP` for the SEL-3622.
     """
+
+    def endpoint(self, endpoint: str) -> str:
+        """
+        Generate an endpoint
+        """
+        endpoint = endpoint.lower()
+
+        if endpoint not in ENDPOINTS:
+            raise IndexError(f"Endpoint {endpoint} not available")
+        else:
+            return urljoin(self.url, ENDPOINTS[endpoint])
 
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
@@ -31,12 +44,11 @@ class HTTP3622(SELHTTP):
 
         # Voodoo magicks be here
         # The 3622 seems to complain if you don't first GET Login.sel.
-        if not self.get("/Login.sel", "https"):
+        if not self.get(ENDPOINTS["login"], "https", use_cache=False):
             self.log.error("Could not get login page")
             return False
 
-        url = urljoin(self.url, "/Login.sel")
-        resp = self.post(url, data=login_data)
+        resp = self.post(self.endpoint("login"), data=login_data)
 
         # Null response means no host
         if not resp:
@@ -45,7 +57,9 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            self.log.error(
+                f"Login failed: received non-200 response ({resp.status_code})."
+            )
             return False
 
         # Log-in failure
@@ -66,16 +80,16 @@ class HTTP3622(SELHTTP):
         assert self.gateway_logged_in
         assert self.gateway == "SEL-3622"
 
-        idx = self.get("/index.sel")
+        idx = self.get(ENDPOINTS["dashboard"], use_cache=False)
         if not idx:
-            self.log.error("Could not get /index.sel")
+            self.log.error(f"Could not get {ENDPOINTS['dashboard']}")
             return None
 
         # We can perform an explicit check for the device's FID.
         idx_soup = self.gen_soup(idx.text)
 
         fid = idx_soup.find("td", {"id": "fid"})
-        if not fid:
+        if not isinstance(fid, Tag):
             self.log.error("Could not get fid field")
             return None
         return fid.get_text()
@@ -97,34 +111,14 @@ class HTTP3622(SELHTTP):
         Log out of an SEL-3622 gateway
         """
         if self.gateway_logged_in and self.gateway == "SEL-3622":
-            self.get("/Logout.sel")
+            self.get(ENDPOINTS["logout"], use_cache=False)
             self.gateway_logged_in = False
             del self.gateway
-
-    def prepcfg(self) -> str | None:
-        """
-        Prepare a configuration file download.
-        """
-        # Just in case, GET the FileManagement console
-        self.get("/FileManagement.sel")
-
-        self.post(
-            urljoin(self.url, "/FileManagement.sel"),
-            data={
-                "Password": "Peater!1",
-                "PasswordConfirm": "Peater!1",
-                "submit": "Generate",
-            },
-        )
-
-        self.log.info("Sent a generation request. Awaiting completion...")
-
-        # TODO: find a suitable way of awaiting the completion of this task.
-        # Threading?
-
-        return None
 
     def disconnect(self) -> None:
         if self.gateway_logged_in and self.gateway == "SEL-3622":
             self.logout()
         return super().disconnect()
+
+
+__all__ = ["HTTP3622"]
