@@ -181,7 +181,7 @@ class SystemSettingsPoller:
             self.http.log.error("Settings not queued!")
             return False
         
-        response = self.http.get(self.http.endpoint("filesystem"))
+        response = self.http.get(ENDPOINTS["filesystem"])
         if not response:
             self.http.log.error("No response")
             return False
