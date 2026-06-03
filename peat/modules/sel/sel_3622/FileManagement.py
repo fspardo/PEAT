@@ -170,16 +170,31 @@ class SystemSettingsPoller:
 
         return True
 
-    def query(self) -> SystemSettings | None:
+    def query(self) -> SystemSettings | bool:
         """
         Query the status of the system settings file.
 
-        Will download it if it is ready. Returns `None` if it's not ready.
+        Will download it if it is ready. Returns `True` if it's not ready and `False` on error.
         """
 
         if self.old_hash == "" or self.token == "":
             self.http.log.error("Settings not queued!")
-            return None
+            return False
+        
+        response = self.http.get(self.http.endpoint("filesystem"))
+        if not response:
+            self.http.log.error("No response")
+            return False
+        
+        if response.status_code != 200:
+            self.http.log.error("Non-200 status code")
+            return False
+        
+        hash = pull_hash(self.http)
+
+        if hash == self.old_hash:
+            self.http.log.debug("No change to hash")
+            return True
 
         response = self.http.post(
             self.http.endpoint("filesystem"),
@@ -189,21 +204,19 @@ class SystemSettingsPoller:
 
         if not response:
             self.http.log.error("No response")
-            return None
+            return False
 
         if response.status_code != 200:
             self.http.log.error("Could not pull file")
-            return None
+            return False
 
-        if response.headers["Content-Type"] == "text/html" or response.raw._body is not bytes:
+        if response.headers["Content-Type"] == "text/html":
             self.http.log.error("Incorrect content type")
-            return None
-
-        hash = pull_hash(self.http)
+            return False
 
         if hash is None:
             self.http.log.error("Could not pull hash")
-            return None
+            return False
 
         return SystemSettings(
             self.old_hash,
