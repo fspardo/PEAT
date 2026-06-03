@@ -6,7 +6,7 @@ Author: Francisco Santana <fsantan@sandia.gov>
 
 from copy import copy
 from dataclasses import dataclass
-from time import gmtime, strftime, time
+from datetime import datetime, timezone
 from typing import Any, Final
 
 from bs4.element import Tag
@@ -59,7 +59,7 @@ class SystemSettings:
     time: str
 
 
-def pull_requesite_data(http: HTTP3622) -> tuple[str, str] | None:
+def pull_hash_and_token(http: HTTP3622) -> tuple[str, str] | None:
     response = http.get(ENDPOINTS["filesystem"], use_cache=False)
 
     if not response:
@@ -86,6 +86,28 @@ def pull_requesite_data(http: HTTP3622) -> tuple[str, str] | None:
 
     return old_hash.get_text(strip=True), token.attrs["value"]
 
+def pull_hash(http: HTTP3622) -> str | None:
+    response = http.get(ENDPOINTS["filesystem"], use_cache=False)
+
+    if not response:
+        http.log.error("No response")
+        return None
+
+    if response.status_code != 200:
+        http.log.error("Error loading page")
+        return None
+
+    soup = http.gen_soup(response.text)
+
+    hash = soup.find("span", {"id": HASH_ID})
+
+    if not isinstance(hash, Tag):
+        http.log.error("Could not get old hash log")
+        return None
+    
+    return hash.get_text(strip=True)
+
+
 
 class SystemSettingsPoller:
     """
@@ -108,7 +130,7 @@ class SystemSettingsPoller:
 
         self.http.log.info("Preparing a configuration file snapshot...")
 
-        pair = pull_requesite_data(self.http)
+        pair = pull_hash_and_token(self.http)
 
         if not pair:
             return False
@@ -172,7 +194,20 @@ class SystemSettingsPoller:
             self.http.log.error("Could not pull file")
             return None
 
-        raise NotImplementedError()
+        if (
+            response.headers["Content-Type"] == "text/html"
+            or response.raw._body is not bytes
+        ):
+            self.http.log.error("Incorrect content type")
+            return None
+        
+        hash = pull_hash(self.http)
+
+        if hash is None:
+            self.http.log.error("Could not pull hash")
+            return None
+
+        return SystemSettings(hash, bytes(response.raw.data), f"{datetime.now(timezone.utc):%Y%m%dT%H%M%S}")
 
 
 __all__ = ["SystemSettingsPoller", "SystemSettings"]
