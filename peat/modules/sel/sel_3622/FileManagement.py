@@ -68,7 +68,7 @@ def get_hash(http: HTTP3622) -> str | None:
 
 class SystemSettingsPoller:
     """
-    Hanles queueing and polling the system settings file
+    Handles queueing and polling the system settings file
     """
 
     http: HTTP3622
