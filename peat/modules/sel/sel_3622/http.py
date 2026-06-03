@@ -7,6 +7,7 @@ Author: Francisco Santana <fsantan@sandia.gov>
 from urllib.parse import urljoin
 
 from bs4.element import Tag
+from ..sel_http import Response
 
 from ..sel_http import SELHTTP
 from .endpoints import ENDPOINTS
@@ -16,6 +17,12 @@ class HTTP3622(SELHTTP):
     """
     Class specialization of `SELHTTP` for the SEL-3622.
     """
+
+    def get(self, *args, **kwargs) -> Response | None:
+        if "use_cache" not in kwargs:
+            super().get(*args, use_cache=False, **kwargs)
+        else:
+            super().get(*args, **kwargs)
 
     def endpoint(self, endpoint: str) -> str:
         """
@@ -66,7 +73,9 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            self.log.error(
+                f"Login failed: received non-200 response ({resp.status_code})."
+            )
             return False
 
         # Log-in failure
