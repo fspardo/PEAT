@@ -40,6 +40,7 @@ def form_generate(password: str, token: str):
 
     return result
 
+
 def form_export(token: str):
     """
     Create a form populated with the requisite "Generate" data
@@ -159,8 +160,8 @@ class SystemSettingsPoller:
 
         response = self.http.post(
             self.http.endpoint("filesystem"),
-            data={"Password": None, "PasswordConfirm": None, "submit": "Export"},
-            headers={"Referrer": self.http.endpoint("filesystem")},
+            files=form_export(self.token),
+            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['filesystem']}"},
         )
 
         if not response:
