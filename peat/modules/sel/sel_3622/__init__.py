@@ -28,14 +28,7 @@ class SEL3622(DeviceModule):
     default_options = {"web": {"user": "admin", "pass": "IAmAdmin!1", "users": []}}
 
     @classmethod
-    def _verify_http(cls, dev: DeviceData) -> bool:
-        """
-        Validate that the device is an SEL-3622 via its HTTPS web interface
-        """
-        cls.log.info(f"SEL/3622: Verifying {dev.ip} via HTTPS")
-
-        # TODO: perform validation
-
+    def get_session(cls, dev: DeviceData) -> SELHTTP | None:
         port = dev.options["https"]["port"]
         timeout = dev.options["https"]["timeout"]
 
@@ -63,6 +56,22 @@ class SEL3622(DeviceModule):
         cls.log.debug(f"Attempting log-in as {user}/{passwd}")
         if not session.login(user, passwd):
             cls.log.error("Failed to log in to the device!")
+            return None
+        else:
+            return session
+
+    @classmethod
+    def _verify_http(cls, dev: DeviceData) -> bool:
+        """
+        Validate that the device is an SEL-3622 via its HTTPS web interface
+        """
+        cls.log.info(f"SEL/3622: Verifying {dev.ip} via HTTPS")
+
+        # TODO: perform validation
+
+        session = cls.get_session(dev)
+        if not session:
+            cls.log.error("Failed to log in to the device!")
             return False
 
         if session.validate_fid():
@@ -77,9 +86,24 @@ class SEL3622(DeviceModule):
 
     @classmethod
     def _pull(cls, dev: DeviceData) -> bool:
+        """
+        Pull data from the SEL 3622
+        """
+        from .FileManagement import SystemSettingsPoller
+
         cls.log.info(f"SEL/3622: Pulling information")
 
+        session = cls.get_session(dev)
+        if not session:
+            cls.log.error("Failed to initialize session")
+            return False
+
         # TODO: pull
+
+        ssp = SystemSettingsPoller(session)
+        if not ssp.queue():
+            cls.log.error("Failed to queue system file generation")
+            return False
 
         return False
 
