@@ -5,6 +5,7 @@ Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from urllib.parse import urljoin
+
 from bs4.element import Tag
 
 from ..sel_http import SELHTTP
@@ -57,9 +58,7 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(
-                f"Login failed: received non-200 response ({resp.status_code})."
-            )
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
             return False
 
         # Log-in failure

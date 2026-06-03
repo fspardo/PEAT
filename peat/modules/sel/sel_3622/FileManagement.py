@@ -4,11 +4,12 @@ Get data from /FileManagement.sel.
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
-from .http import HTTP3622
-
 from dataclasses import dataclass
-from time import strftime, gmtime, time
+from time import gmtime, strftime, time
+
 from bs4.element import Tag
+
+from .http import HTTP3622
 
 
 @dataclass
