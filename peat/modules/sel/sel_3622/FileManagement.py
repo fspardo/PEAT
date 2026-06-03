@@ -54,6 +54,7 @@ def form_export(token: str):
 
 @dataclass
 class SystemSettings:
+    prev_hash: str
     hash: str
     data: bytes
     time: str
@@ -86,6 +87,7 @@ def pull_hash_and_token(http: HTTP3622) -> tuple[str, str] | None:
 
     return old_hash.get_text(strip=True), token.attrs["value"]
 
+
 def pull_hash(http: HTTP3622) -> str | None:
     response = http.get(ENDPOINTS["filesystem"], use_cache=False)
 
@@ -104,9 +106,8 @@ def pull_hash(http: HTTP3622) -> str | None:
     if not isinstance(hash, Tag):
         http.log.error("Could not get old hash log")
         return None
-    
-    return hash.get_text(strip=True)
 
+    return hash.get_text(strip=True)
 
 
 class SystemSettingsPoller:
@@ -194,20 +195,22 @@ class SystemSettingsPoller:
             self.http.log.error("Could not pull file")
             return None
 
-        if (
-            response.headers["Content-Type"] == "text/html"
-            or response.raw._body is not bytes
-        ):
+        if response.headers["Content-Type"] == "text/html" or response.raw._body is not bytes:
             self.http.log.error("Incorrect content type")
             return None
-        
+
         hash = pull_hash(self.http)
 
         if hash is None:
             self.http.log.error("Could not pull hash")
             return None
 
-        return SystemSettings(hash, bytes(response.raw.data), f"{datetime.now(timezone.utc):%Y%m%dT%H%M%S}")
+        return SystemSettings(
+            self.old_hash,
+            hash,
+            bytes(response.raw.data),
+            f"{datetime.now(timezone.utc):%Y%m%dT%H%M%S}",
+        )
 
 
 __all__ = ["SystemSettingsPoller", "SystemSettings"]
