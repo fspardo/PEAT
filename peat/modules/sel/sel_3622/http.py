@@ -7,9 +7,8 @@ Author: Francisco Santana <fsantan@sandia.gov>
 from urllib.parse import urljoin
 
 from bs4.element import Tag
-from ..sel_http import Response
 
-from ..sel_http import SELHTTP
+from ..sel_http import SELHTTP, Response
 from .endpoints import ENDPOINTS
 
 
@@ -20,9 +19,9 @@ class HTTP3622(SELHTTP):
 
     def get(self, *args, **kwargs) -> Response | None:
         if "use_cache" not in kwargs:
-            super().get(*args, use_cache=False, **kwargs)
+            return super().get(*args, use_cache=False, **kwargs)
         else:
-            super().get(*args, **kwargs)
+            return super().get(*args, **kwargs)
 
     def endpoint(self, endpoint: str) -> str:
         """
@@ -52,12 +51,11 @@ class HTTP3622(SELHTTP):
 
         # Voodoo magicks be here
         # Gets a session cookie
-        resp = self.get(ENDPOINTS["login"], "https", use_cache=False)
-        if not resp:
+        if not self.get(ENDPOINTS["login"], "https"):
             self.log.error("Could not get login page")
             return False
 
-        selssid = resp.cookies.get("SELSSID")
+        selssid = self.session.cookies["SELSESSID"]
         if not selssid:
             self.log.error("Did not get a session ID")
             return False
@@ -73,9 +71,7 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(
-                f"Login failed: received non-200 response ({resp.status_code})."
-            )
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
             return False
 
         # Log-in failure
