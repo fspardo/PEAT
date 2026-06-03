@@ -27,8 +27,14 @@ class SEL3622(DeviceModule):
     module_aliases = ["sel-3622", "3622", "sel-3620-slim", "3620-slim"]
     default_options = {"web": {"user": "admin", "pass": "IAmAdmin!1", "users": []}}
 
+    session: SELHTTP | None = None
+
     @classmethod
     def get_session(cls, dev: DeviceData) -> SELHTTP | None:
+        if cls.session:
+            # TODO: determine how best to handle multiple devices
+            return cls.session
+        
         port = dev.options["https"]["port"]
         timeout = dev.options["https"]["timeout"]
 
@@ -89,7 +95,7 @@ class SEL3622(DeviceModule):
         """
         Pull data from the SEL 3622
         """
-        from .FileManagement import SystemSettingsPoller
+        from .FileManagement import SystemSettingsPoller, SystemSettings
 
         cls.log.info(f"SEL/3622: Pulling information")
 
@@ -104,6 +110,19 @@ class SEL3622(DeviceModule):
         if not ssp.queue():
             cls.log.error("Failed to queue system file generation")
             return False
+
+        sys_settings = None
+        for i in range(0, 10):
+            cls.log.debug(f"Query {i + 1} of 10...")
+            from time import sleep
+
+            sleep(10)
+            sys_settings = ssp.query()
+            if sys_settings is SystemSettings:
+                break
+
+            if not sys_settings:
+                return False
 
         return False
 
