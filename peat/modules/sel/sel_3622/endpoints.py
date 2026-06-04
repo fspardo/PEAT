@@ -1,3 +1,9 @@
+"""
+HTTP endpoints for the SEL-3622.
+
+Author: Francisco Santana <fsantan@sandia.gov>
+"""
+
 ENDPOINTS = {
     "commissioning": "/Commissioning.sel",
     "login": "/Login.sel",
