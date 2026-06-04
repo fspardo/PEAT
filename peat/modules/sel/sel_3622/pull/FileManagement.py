@@ -69,7 +69,9 @@ class SystemSettings:
     current_firmware: str
     previous_firmware: str
 
-    # TODO: pull hash for last uploaded config and connection directory
+    # Supplementary information
+    last_uploaded_config_hash: str
+    connection_directory_hash: str
 
 
 def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
@@ -91,11 +93,15 @@ def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
         http.log.error("Could not get old hash")
         return None
 
+    oh = old_hash.get_text(strip=True)
+
     token = soup.find("input", {"type": "hidden", "id": "t"})
 
     if not isinstance(token, Tag):
         http.log.error("Could not get token")
         return None
+
+    tkn = token.attrs["value"]
 
     current_version = soup.find("span", {"id": "display_CurrentVersion"})
 
@@ -103,17 +109,39 @@ def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
         http.log.error("Could not get current version")
         return None
 
+    cv = current_version.get_text(strip=True)
+
     previous_version = soup.find("span", {"id": "display_PreviousVersion"})
 
-    pv = "Unknown"
+    pv = "N/A"
     if isinstance(previous_version, Tag):
         pv = previous_version.get_text(strip=True)
 
+    last_uploaded_cfg = soup.find("span", {"id": "display_systemSettingsImportHash"})
+
+    if not isinstance(last_uploaded_cfg, Tag):
+        http.log.error("Could not get the last uploaded configuration file's hash")
+        return None
+
+    luch = last_uploaded_cfg.get_text(strip=True)
+
+    conn_dir_hash = soup.find("span", {"id": "display_connectionDirectoryHash"})
+
+    if not isinstance(conn_dir_hash, Tag):
+        http.log.error(
+            "Could not get the last uploaded connection directory configuration hash"
+        )
+        return None
+
+    cdh = conn_dir_hash.get_text(strip=True)
+
     return {
-        "old_hash": old_hash.get_text(strip=True),
-        "token": token.attrs["value"],
-        "current_version": current_version.get_text(strip=True),
+        "old_hash": oh,
+        "token": tkn,
+        "current_version": cv,
         "previous_version": pv,
+        "last_uploaded_hash": luch,
+        "connection_directory_hash": cdh,
     }
 
 
@@ -213,6 +241,8 @@ class SystemSettingsPoller:
         self.password = password
         self.current_version = info["current_version"]
         self.previous_version = info["previous_version"]
+        self.last_uploaded_hash = info["last_uploaded_hash"]
+        self.connection_directory_hash = info["connection_directory_hash"]
 
         return True
 
@@ -271,6 +301,8 @@ class SystemSettingsPoller:
             f"SystemSettings-{gen_time}.bkp",
             self.current_version,
             self.previous_version,
+            self.last_uploaded_hash,
+            self.connection_directory_hash,
         )
 
 
@@ -306,6 +338,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
 
     return {
         "system_settings_backup": {
+            "last_uploaded_hash": sys_settings.last_uploaded_config_hash,
             "old_hash": sys_settings.prev_hash,
             "new_hash": sys_settings.hash,
             "file_name": sys_settings.file_name,
@@ -317,6 +350,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
             "current_version": sys_settings.current_firmware,
             "previous_version": sys_settings.previous_firmware,
         },
+        "connection_directory_config_hash": sys_settings.connection_directory_hash,
     }
 
 
