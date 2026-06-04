@@ -27,13 +27,16 @@ class SEL3622(DeviceModule):
     module_aliases = ["sel-3622", "3622", "sel-3620-slim", "3620-slim"]
     default_options = {"web": {"user": "admin", "pass": "IAmAdmin!1", "users": []}}
 
-    session: SELHTTP | None = None
-
     @classmethod
     def get_session(cls, dev: DeviceData) -> SELHTTP | None:
-        if cls.session:
-            # TODO: determine how best to handle multiple devices
-            return cls.session
+        """
+        Get the session associated with the device
+        """
+        if "web_session" in dev._cache:
+            session = dev._cache["web_session"]
+            assert isinstance(session, SELHTTP)
+            if session.is_logged_in():
+                return session
 
         port = dev.options["https"]["port"]
         timeout = dev.options["https"]["timeout"]
@@ -64,7 +67,7 @@ class SEL3622(DeviceModule):
             cls.log.error("Failed to log in to the device!")
             return None
         else:
-            cls.session = session
+            dev._cache["web_session"] = session
             return session
 
     @classmethod
@@ -86,8 +89,6 @@ class SEL3622(DeviceModule):
         else:
             cls.log.error("Failure!")
             return False
-
-        session.disconnect()
 
         return True
 
@@ -119,19 +120,19 @@ class SEL3622(DeviceModule):
             cls.log.debug(f"Query {i + 1} of 10...")
             from time import sleep
 
-            sleep(30)
+            sleep(10)
             sys_settings = ssp.query()
-            if sys_settings is SystemSettings:
+            if isinstance(sys_settings, SystemSettings):
                 cls.log.info("Pulled system configuration backup")
                 break
 
             if not sys_settings:
                 return False
 
-        if not sys_settings is not SystemSettings:
+        if not isinstance(sys_settings, SystemSettings):
             cls.log.info("Pulling system configuration backup...")
             sys_settings = ssp.query(force=True)
-            if sys_settings is not SystemSettings:
+            if not isinstance(sys_settings, SystemSettings):
                 cls.log.error("Failed to pull the system configuration backup")
                 return False
 
