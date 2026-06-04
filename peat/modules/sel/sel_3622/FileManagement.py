@@ -199,7 +199,7 @@ class SystemSettingsPoller:
 
         hash = pull_hash(self.http)
 
-        if hash == self.old_hash and not force:
+        if not force and hash == self.old_hash:
             self.http.log.debug("No change to hash")
             return True
 
