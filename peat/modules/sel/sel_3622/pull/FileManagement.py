@@ -17,7 +17,9 @@ from peat.data.models import DeviceData
 from ..endpoints import ENDPOINTS
 from ..http import HTTP3622
 
+# This is used in more places than one
 HASH_ID: Final[str] = "display_systemSettingsExportHash"
+# The base content to perform a request on this page
 FORM_CONTENT: Final[dict[str, Any]] = {
     "fileUploadType": (None, "firmwareFile"),
     "JAVASCRIPT": (None, "True"),
@@ -46,7 +48,7 @@ def form_generate(password: str, token: str):
 
 def form_export(token: str):
     """
-    Create a form populated with the requisite "Generate" data
+    Create a form populated with the requisite "Export" data
     """
     result = copy(FORM_CONTENT)
     result["t"] = (None, token)
@@ -57,6 +59,10 @@ def form_export(token: str):
 
 @dataclass
 class SystemSettings:
+    """
+    Structured representation of the data expected here
+    """
+
     # Fields to do with system settings
     prev_hash: str
     hash: str
@@ -74,7 +80,18 @@ class SystemSettings:
     connection_directory_hash: str
 
 
-def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
+def pull_info(http: HTTP3622) -> dict[str, str] | None:
+    """
+    Pulls several data points from the web page:
+
+    - The last uploaded "connection directory" configuration file's hash
+    - The last uploaded "system settings" backup file's hash
+    - The last generated "system settings" backup file's hash
+    - The current firmware version
+    - The previous firmware version
+    - The token required to initiate a backup file generation *and*
+      download a copy of the generated backup file
+    """
     response = http.get(ENDPOINTS["filesystem"], use_cache=False)
 
     if not response:
@@ -128,9 +145,7 @@ def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
     conn_dir_hash = soup.find("span", {"id": "display_connectionDirectoryHash"})
 
     if not isinstance(conn_dir_hash, Tag):
-        http.log.error(
-            "Could not get the last uploaded connection directory configuration hash"
-        )
+        http.log.error("Could not get the last uploaded connection directory configuration hash")
         return None
 
     cdh = conn_dir_hash.get_text(strip=True)
@@ -146,6 +161,11 @@ def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
 
 
 def pull_hash(http: HTTP3622) -> str | None:
+    """
+    Pulls the current hash of the last generated configuration file.
+
+    Used to detect whether a new file was generated recently.
+    """
     response = http.get(ENDPOINTS["filesystem"], use_cache=False)
 
     if not response:
@@ -168,6 +188,14 @@ def pull_hash(http: HTTP3622) -> str | None:
 
 
 def get_password():
+    """
+    For now, returns a static password.
+
+    Was intended to generate passwords dynamically (in the hopes
+    of having a different hash appear), but that hash seems to
+    depend on the raw contents of the file, as opposed to the
+    compressed, encrypted, Base64 representation of the file.
+    """
     return "Peat!123"
 
 
@@ -198,7 +226,7 @@ class SystemSettingsPoller:
 
         self.http.log.info("Preparing a configuration file snapshot...")
 
-        info = pull_hash_and_token(self.http)
+        info = pull_info(self.http)
 
         if not info:
             return False
@@ -307,11 +335,31 @@ class SystemSettingsPoller:
 
 
 def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
+    """
+    Pull data from the "/FileManagement.sel" endpoint.
+
+    Will pull and provide the following data:
+
+    | Field                                       | Description                                                            |
+    |---------------------------------------------|------------------------------------------------------------------------|
+    | `system_settings_backup.last_uploaded_hash` | The hash of the last uploaded backup configuration file.               |
+    | `system_settings_backup.old_hash`           | The hash of the previously-generated backup.                           |
+    | `system_settings_backup.new_hash`           | The hash of the newly-generated backup.                                |
+    | `system_settings_backup.file_name`          | The name of the backup file.                                           |
+    | `system_settings_backup.config_archive`     | The configuration backup file.                                         |
+    | `system_settings_backup.password`           | The time at which this file was pulled.                                |
+    | `system_settings_backup.time_pulled`        | The password used to encrypt this file.                                |
+    | `firmware.current_version`                  | The current version of the firmware.                                   |
+    | `firmware.previous_version`                 | The previous version of the firmware.                                  |
+    | `connection_directory_config_hash`          | The hash of the last uploaded Connection Directory configuration file. |
+    """
+
     ssp = SystemSettingsPoller(http)
-    if not ssp.queue():
+    if not ssp.queue(): # Attempt to queue the creation of the configuration file
         raise Exception("Failed to queue system file generation")
 
     # Query once every 30 seconds, for a total of 300s (5m).
+    # Querying this way ensures we do not retrieve an outdated version of the backup
     for i in range(0, 10):
         log.debug(f"Query {i + 1} of 10...")
         from time import sleep
@@ -325,6 +373,9 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
         if not sys_settings:
             raise Exception("Error in querying system settings")
 
+
+    # Odds are, if it has failed after about two minutes of attempts, then there were
+    # no changes to the backup file.
     if not isinstance(sys_settings, SystemSettings):
         log.info("Pulling system configuration backup...")
         sys_settings = ssp.query(force=True)
@@ -333,6 +384,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
 
     log.info(f"Pulled system configuration (saved as {sys_settings.file_name})")
 
+    # Write, then note.
     dev.write_file(sys_settings.data, sys_settings.file_name)
     dev.related.files.add(sys_settings.file_name)
 
