@@ -8,11 +8,11 @@ from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Final
-from loguru import Logger
 
 from bs4.element import Tag
 
 from peat.data.models import DeviceData
+from peat import log
 
 from ..endpoints import ENDPOINTS
 from ..http import HTTP3622
@@ -260,11 +260,13 @@ class SystemSettingsPoller:
 
         gen_time = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%S}"
 
+        assert isinstance(response.content, bytes)
+
         return SystemSettings(
             self.old_hash,
             hash,
             self.password,
-            bytes(response.raw.data),
+            response.content,
             gen_time,
             f"SystemSettings-{gen_time}.bkp",
             self.current_version,
@@ -273,7 +275,7 @@ class SystemSettingsPoller:
 
 
 def pull_file_management(
-    log: Logger, dev: DeviceData, http: HTTP3622
+    dev: DeviceData, http: HTTP3622
 ) -> dict[str, Any]:
     ssp = SystemSettingsPoller(http)
     if not ssp.queue():
@@ -299,7 +301,10 @@ def pull_file_management(
         if not isinstance(sys_settings, SystemSettings):
             raise Exception("Failed to pull the system configuration backup")
 
-    log.info("Pulled system configuration")
+    log.info(f"Pulled system configuration (saved as {sys_settings.file_name})")
+
+    dev.write_file(sys_settings.data, sys_settings.file_name)
+    dev.related.files.add(sys_settings.file_name)
 
     return {
         "system_settings_backup": {
