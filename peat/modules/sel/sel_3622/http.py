@@ -1,7 +1,8 @@
 """
 SEL HTTP module specialized for the SEL-3622
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Authors:
+    - Francisco Santana <fsantan@sandia.gov>
 """
 
 from urllib.parse import urljoin

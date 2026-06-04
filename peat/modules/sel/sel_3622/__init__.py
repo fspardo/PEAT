@@ -5,7 +5,8 @@ The docs call this a "small form-factor" version of the 3620,
 but the differences seem to go deeper than calling it the
 3620's dwarf brother.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Authors:
+    - Francisco Santana <fsantan@sandia.gov>
 """
 
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
