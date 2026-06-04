@@ -12,6 +12,8 @@ from loguru import Logger
 
 from bs4.element import Tag
 
+from peat.data.models import DeviceData
+
 from ..endpoints import ENDPOINTS
 from ..http import HTTP3622
 
@@ -62,8 +64,11 @@ class SystemSettings:
     time: str
     file_name: str
 
+    current_firmware: str
+    previous_firmware: str
 
-def pull_hash_and_token(http: HTTP3622) -> tuple[str, str] | None:
+
+def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
     response = http.get(ENDPOINTS["filesystem"], use_cache=False)
 
     if not response:
@@ -88,7 +93,24 @@ def pull_hash_and_token(http: HTTP3622) -> tuple[str, str] | None:
         http.log.error("Could not get token")
         return None
 
-    return old_hash.get_text(strip=True), token.attrs["value"]
+    current_version = soup.find("span", {"id": "display_CurrentVersion"})
+
+    if not isinstance(current_version, Tag):
+        http.log.error("Could not get current version")
+        return None
+
+    previous_version = soup.find("span", {"id": "display_PreviousVersion"})
+
+    pv = "Unknown"
+    if isinstance(previous_version, Tag):
+        pv = previous_version.get_text(strip=True)
+
+    return {
+        "old_hash": old_hash.get_text(strip=True),
+        "token": token.attrs["value"],
+        "current_version": current_version.get_text(strip=True),
+        "previous_version": pv,
+    }
 
 
 def pull_hash(http: HTTP3622) -> str | None:
@@ -114,7 +136,7 @@ def pull_hash(http: HTTP3622) -> str | None:
 
 
 def get_password():
-    return f"Peat@{datetime.now(timezone.utc):%Y%m%dT%H%M%S}"
+    return "Peat!123"
 
 
 class SystemSettingsPoller:
@@ -123,15 +145,19 @@ class SystemSettingsPoller:
     """
 
     http: HTTP3622
-    old_hash: str = ""
-    token: str = ""
-    password: str = ""
+    old_hash: str
+    token: str
+    password: str
+    current_version: str
+    previous_version: str
 
     def __init__(self, http: HTTP3622):
         self.http = http
         self.old_hash = ""
         self.token = ""
         self.password = ""
+        self.current_version = ""
+        self.previous_version = ""
 
     def queue(self) -> bool:
         """
@@ -140,12 +166,12 @@ class SystemSettingsPoller:
 
         self.http.log.info("Preparing a configuration file snapshot...")
 
-        pair = pull_hash_and_token(self.http)
+        info = pull_hash_and_token(self.http)
 
-        if not pair:
+        if not info:
             return False
 
-        old_hash, self.token = pair
+        old_hash, self.token = info["old_hash"], info["token"]
 
         self.http.log.debug(f"Old hash: {old_hash}; token: {self.token}")
 
@@ -181,6 +207,8 @@ class SystemSettingsPoller:
         )
         self.old_hash = old_hash
         self.password = password
+        self.current_version = info["current_version"]
+        self.previous_version = info["previous_version"]
 
         return True
 
@@ -235,14 +263,17 @@ class SystemSettingsPoller:
             bytes(response.raw.data),
             gen_time,
             f"SystemSettings-{gen_time}.bkp",
+            self.current_version,
+            self.previous_version,
         )
 
 
-def pull_system_settings(log: Logger, http: HTTP3622) -> SystemSettings | None:
+def pull_file_management(
+    log: Logger, dev: DeviceData, http: HTTP3622
+) -> dict[str, Any]:
     ssp = SystemSettingsPoller(http)
     if not ssp.queue():
-        log.error("Failed to queue system file generation")
-        return None
+        raise Exception("Failed to queue system file generation")
 
     # Query once every 30 seconds, for a total of 300s (5m).
     for i in range(0, 10):
@@ -256,16 +287,30 @@ def pull_system_settings(log: Logger, http: HTTP3622) -> SystemSettings | None:
             break
 
         if not sys_settings:
-            return None
+            raise Exception("Error in querying system settings")
 
     if not isinstance(sys_settings, SystemSettings):
         log.info("Pulling system configuration backup...")
         sys_settings = ssp.query(force=True)
         if not isinstance(sys_settings, SystemSettings):
-            log.error("Failed to pull the system configuration backup")
-            return None
+            raise Exception("Failed to pull the system configuration backup")
 
     log.info("Pulled system configuration")
 
+    return {
+        "system_settings_backup": {
+            "old_hash": sys_settings.prev_hash,
+            "new_hash": sys_settings.hash,
+            "file_name": sys_settings.file_name,
+            "config_archive": sys_settings.data,
+            "password": sys_settings.password,
+            "time_pulled": sys_settings.time,
+        },
+        "firmware": {
+            "current_version": sys_settings.current_firmware,
+            "previous_version": sys_settings.previous_firmware,
+        },
+    }
 
-__all__ = ["SystemSettingsPoller", "SystemSettings", "pull_system_settings"]
+
+__all__ = ["SystemSettingsPoller", "SystemSettings", "pull_file_management"]
