@@ -34,6 +34,17 @@ class HTTP3622(SELHTTP):
         else:
             return urljoin(self.url, ENDPOINTS[endpoint])
 
+    def is_logged_in(self) -> bool:
+        """
+        Check if the session is still logged in
+        """
+        
+        result = self.get("/index.sel", allow_redirects=False)
+
+        return not result or (
+            result.ok and not (result.is_redirect or result.is_permanent_redirect)
+        )
+
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
@@ -64,7 +75,9 @@ class HTTP3622(SELHTTP):
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
-        resp = self.post(self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10))
+        resp = self.post(
+            self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10)
+        )
 
         # Null response means no host
         if not resp:
@@ -73,7 +86,9 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            self.log.error(
+                f"Login failed: received non-200 response ({resp.status_code})."
+            )
             return False
 
         # Log-in failure
