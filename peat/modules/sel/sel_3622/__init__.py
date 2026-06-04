@@ -12,6 +12,10 @@ from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622 as SELHTTP
 
+from .pull import (
+    pull_system_settings,
+)
+
 
 class SEL3622(DeviceModule):
     """
@@ -77,8 +81,6 @@ class SEL3622(DeviceModule):
         """
         cls.log.info(f"SEL/3622: Verifying {dev.ip} via HTTPS")
 
-        # TODO: perform validation
-
         session = cls.get_session(dev)
         if not session:
             cls.log.error("Failed to log in to the device!")
@@ -97,7 +99,6 @@ class SEL3622(DeviceModule):
         """
         Pull data from the SEL 3622
         """
-        from .FileManagement import SystemSettings, SystemSettingsPoller
 
         cls.log.info(f"SEL/3622: Pulling information")
 
@@ -108,35 +109,9 @@ class SEL3622(DeviceModule):
 
         # TODO: pull
 
-        ssp = SystemSettingsPoller(session)
-        if not ssp.queue():
-            cls.log.error("Failed to queue system file generation")
+        sys_settings = pull_system_settings(cls.log, session)
+        if not sys_settings:
             return False
-
-        sys_settings = None
-
-        # Query once every 30 seconds, for a total of 300s (5m).
-        for i in range(0, 10):
-            cls.log.debug(f"Query {i + 1} of 10...")
-            from time import sleep
-
-            sleep(10)
-            sys_settings = ssp.query()
-            if isinstance(sys_settings, SystemSettings):
-                cls.log.info("Pulled system configuration backup")
-                break
-
-            if not sys_settings:
-                return False
-
-        if not isinstance(sys_settings, SystemSettings):
-            cls.log.info("Pulling system configuration backup...")
-            sys_settings = ssp.query(force=True)
-            if not isinstance(sys_settings, SystemSettings):
-                cls.log.error("Failed to pull the system configuration backup")
-                return False
-
-        cls.log.info("Pulled system configuration")
 
         # TODO: export configuration file
 

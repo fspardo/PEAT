@@ -8,11 +8,12 @@ from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Final
+from loguru import Logger
 
 from bs4.element import Tag
 
-from .endpoints import ENDPOINTS
-from .http import HTTP3622
+from ..endpoints import ENDPOINTS
+from ..http import HTTP3622
 
 HASH_ID: Final[str] = "display_systemSettingsExportHash"
 FORM_CONTENT: Final[dict[str, Any]] = {
@@ -122,9 +123,9 @@ class SystemSettingsPoller:
     """
 
     http: HTTP3622
-    old_hash: str
-    token: str
-    password: str
+    old_hash: str = ""
+    token: str = ""
+    password: str = ""
 
     def __init__(self, http: HTTP3622):
         self.http = http
@@ -237,4 +238,34 @@ class SystemSettingsPoller:
         )
 
 
-__all__ = ["SystemSettingsPoller", "SystemSettings"]
+def pull_system_settings(log: Logger, http: HTTP3622) -> SystemSettings | None:
+    ssp = SystemSettingsPoller(http)
+    if not ssp.queue():
+        log.error("Failed to queue system file generation")
+        return None
+
+    # Query once every 30 seconds, for a total of 300s (5m).
+    for i in range(0, 10):
+        log.debug(f"Query {i + 1} of 10...")
+        from time import sleep
+
+        sleep(10)
+        sys_settings = ssp.query()
+        if isinstance(sys_settings, SystemSettings):
+            log.info("Pulled system configuration backup")
+            break
+
+        if not sys_settings:
+            return None
+
+    if not isinstance(sys_settings, SystemSettings):
+        log.info("Pulling system configuration backup...")
+        sys_settings = ssp.query(force=True)
+        if not isinstance(sys_settings, SystemSettings):
+            log.error("Failed to pull the system configuration backup")
+            return None
+
+    log.info("Pulled system configuration")
+
+
+__all__ = ["SystemSettingsPoller", "SystemSettings", "pull_system_settings"]
