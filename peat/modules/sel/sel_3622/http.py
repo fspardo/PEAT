@@ -39,7 +39,7 @@ class HTTP3622(SELHTTP):
         """
         Check if the session is still logged in
         """
-        
+
         result = self.get("/index.sel", allow_redirects=False)
 
         return not result or (
@@ -76,9 +76,7 @@ class HTTP3622(SELHTTP):
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
-        resp = self.post(
-            self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10)
-        )
+        resp = self.post(self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10))
 
         # Null response means no host
         if not resp:
@@ -87,9 +85,7 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(
-                f"Login failed: received non-200 response ({resp.status_code})."
-            )
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
             return False
 
         # Log-in failure

@@ -11,8 +11,8 @@ from typing import Any, Final
 
 from bs4.element import Tag
 
-from peat.data.models import DeviceData
 from peat import log
+from peat.data.models import DeviceData
 
 from ..endpoints import ENDPOINTS
 from ..http import HTTP3622
@@ -274,9 +274,7 @@ class SystemSettingsPoller:
         )
 
 
-def pull_file_management(
-    dev: DeviceData, http: HTTP3622
-) -> dict[str, Any]:
+def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     ssp = SystemSettingsPoller(http)
     if not ssp.queue():
         raise Exception("Failed to queue system file generation")

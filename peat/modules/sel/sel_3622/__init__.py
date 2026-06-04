@@ -12,7 +12,6 @@ Authors:
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-
 from .pull import (
     pull_file_management,
 )
@@ -127,7 +126,7 @@ class SEL3622(DeviceModule):
                 pulled_config.update(result)
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
-        
+
         dev.write_file(pulled_config, "web_cfg.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)
