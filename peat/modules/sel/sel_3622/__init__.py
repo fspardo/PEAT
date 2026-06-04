@@ -110,7 +110,9 @@ class SEL3622(DeviceModule):
 
         # TODO: pull
 
-        methods = [pull_file_management]
+        methods = [ # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
+            pull_file_management
+            ]
         pulled_config = {}
 
         tried_methods = 0
