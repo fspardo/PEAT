@@ -11,10 +11,10 @@ Authors:
 
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
-from .http import HTTP3622 as SELHTTP
+from .http import HTTP3622
 
 from .pull import (
-    pull_system_settings,
+    pull_file_management,
 )
 
 
@@ -33,13 +33,13 @@ class SEL3622(DeviceModule):
     default_options = {"web": {"user": "admin", "pass": "IAmAdmin!1", "users": []}}
 
     @classmethod
-    def get_session(cls, dev: DeviceData) -> SELHTTP | None:
+    def get_session(cls, dev: DeviceData) -> HTTP3622 | None:
         """
         Get the session associated with the device
         """
         if "web_session" in dev._cache:
             session = dev._cache["web_session"]
-            assert isinstance(session, SELHTTP)
+            assert isinstance(session, HTTP3622)
             if session.is_logged_in():
                 return session
 
@@ -48,7 +48,7 @@ class SEL3622(DeviceModule):
 
         cls.log.debug(f"Verifying on port {port} with timeout {timeout}")
 
-        session = SELHTTP(dev.ip, port, timeout)
+        session = HTTP3622(dev.ip, port, timeout)
 
         user = None
         passwd = None
@@ -104,13 +104,31 @@ class SEL3622(DeviceModule):
         cls.log.info(f"SEL/3622: Pulling information")
 
         session = cls.get_session(dev)
+        port = dev.options["https"]["port"]
         if not session:
             cls.log.error("Failed to initialize session")
             return False
 
         # TODO: pull
 
-        sys_settings = pull_system_settings(cls.log, session)
+        methods = [pull_file_management]
+        pulled_config = {}
+
+        tried_methods = 0
+
+        for method in methods:
+            tried_methods += 1
+            cls.log.info(
+                f'({tried_methods}/{len(methods)}) Attempting method "{method.__name__} for {dev.ip}:{port}"'
+            )
+
+            try:
+                result = method(cls.log, dev, session)
+                pulled_config.update(result)
+            except Exception as e:
+                cls.log.exception(f"Exception caught: {e}")
+
+        sys_settings = pull_file_management(cls.log, dev, session)
         if not sys_settings:
             return False
 
