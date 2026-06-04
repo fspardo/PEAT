@@ -57,6 +57,7 @@ def form_export(token: str):
 
 @dataclass
 class SystemSettings:
+    # Fields to do with system settings
     prev_hash: str
     hash: str
     password: str
@@ -64,8 +65,11 @@ class SystemSettings:
     time: str
     file_name: str
 
+    # Fields to do with the firmware version
     current_firmware: str
     previous_firmware: str
+
+    # TODO: pull hash for last uploaded config and connection directory
 
 
 def pull_hash_and_token(http: HTTP3622) -> dict[str, str] | None:
