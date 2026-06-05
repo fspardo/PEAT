@@ -15,6 +15,9 @@ from ..http import HTTP3622
 
 
 def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+    """
+    Pull from the /UsagePolicy.sel endpoint
+    """
     response = session.get_endpoint("usage_policy")
 
     if not response:
