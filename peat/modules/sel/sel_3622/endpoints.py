@@ -4,7 +4,31 @@ HTTP endpoints for the SEL-3622.
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
-ENDPOINTS = {
+from typing import Literal
+
+AVAILABLE_ENDPOINTS = Literal[
+    "commissioning",
+    "login",
+    "dashboard",
+    "users",
+    "logout",
+    "webserver",
+    "management",
+    "pam",
+    "filesystem",
+    "reset",
+    "diagnostics",
+    "syslog",
+    "help",
+    "cert",
+    "cert_import",
+    "confirm_deletion",
+]
+
+ENDPOINTS: dict[
+    AVAILABLE_ENDPOINTS,
+    str,
+] = {
     "commissioning": "/Commissioning.sel",
     "login": "/Login.sel",
     "dashboard": "/index.sel",
@@ -23,4 +47,4 @@ ENDPOINTS = {
     "confirm_deletion": "/ConfirmDeletion.sel",
 }
 
-__all__ = ["ENDPOINTS"]
+__all__ = ["ENDPOINTS", "AVAILABLE_ENDPOINTS"]
