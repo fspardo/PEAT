@@ -24,9 +24,21 @@ class HTTP3622(SELHTTP):
         else:
             return super().get(*args, **kwargs)
 
+    def get_page(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+        """
+        Simplification of the "get" function which takes the name of the endpoint
+        """
+        return self.get(ENDPOINTS[page], *args, **kwargs)
+
+    def post_page(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+        """
+        Simplification of the "post" function which takes the name of the endpoint
+        """
+        return self.post(self.endpoint(page), *args, **kwargs)
+
     def endpoint(self, endpoint: AVAILABLE_ENDPOINTS) -> str:
         """
-        Generate an endpoint
+        Generate an endpoint URL (necessary in post for some reason)
         """
 
         if endpoint not in ENDPOINTS:
