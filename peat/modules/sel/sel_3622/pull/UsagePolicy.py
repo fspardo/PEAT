@@ -1,7 +1,7 @@
 """
 Pull the device's usage policy from /UsagePolicy.sel
 
-Author: Francisco Santana
+Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from typing import Any
@@ -17,6 +17,11 @@ from ..http import HTTP3622
 def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull from the /UsagePolicy.sel endpoint
+
+    | Field          | Description                                                               |
+    |----------------|---------------------------------------------------------------------------|
+    | `usage_policy` | Contains the text of the usage policy (which appears in the login screen) |
+
     """
     response = session.get_endpoint("usage_policy")
 
