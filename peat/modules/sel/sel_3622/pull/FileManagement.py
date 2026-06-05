@@ -92,7 +92,7 @@ def pull_info(http: HTTP3622) -> dict[str, str] | None:
     - The token required to initiate a backup file generation *and*
       download a copy of the generated backup file
     """
-    response = http.get(ENDPOINTS["file_management"], use_cache=False)
+    response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
         http.log.error("No response")
@@ -168,7 +168,7 @@ def pull_hash(http: HTTP3622) -> str | None:
 
     Used to detect whether a new file was generated recently.
     """
-    response = http.get(ENDPOINTS["file_management"], use_cache=False)
+    response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
         http.log.error("No response")
@@ -239,8 +239,8 @@ class SystemSettingsPoller:
 
         password = get_password()
 
-        response = self.http.post(
-            self.http.endpoint("file_management"),
+        response = self.http.post_endpoint(
+            "file_management",
             files=form_generate(password, self.token),
             headers={
                 "Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
@@ -298,8 +298,8 @@ class SystemSettingsPoller:
             self.http.log.debug("No change to hash")
             return True
 
-        response = self.http.post(
-            self.http.endpoint("file_management"),
+        response = self.http.post_endpoint(
+            "file_management",
             files=form_export(self.token),
             headers={
                 "Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"

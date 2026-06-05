@@ -24,13 +24,13 @@ class HTTP3622(SELHTTP):
         else:
             return super().get(*args, **kwargs)
 
-    def get_page(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+    def get_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
         """
         Simplification of the "get" function which takes the name of the endpoint
         """
         return self.get(ENDPOINTS[page], *args, **kwargs)
 
-    def post_page(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+    def post_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
         """
         Simplification of the "post" function which takes the name of the endpoint
         """
