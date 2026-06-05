@@ -5,12 +5,13 @@ Author: Francisco Santana
 """
 
 from typing import Any
-from peat import DeviceData
+
 from bs4.element import Tag
 
+from peat import DeviceData
 
-from ..http import HTTP3622
 from ..endpoints import ENDPOINTS
+from ..http import HTTP3622
 
 
 def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
