@@ -125,6 +125,7 @@ class SEL3622(DeviceModule):
             try:
                 result = method(dev, session)
                 pulled_config.update(result)
+                cls.log.info("Successfully used method")
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
 
