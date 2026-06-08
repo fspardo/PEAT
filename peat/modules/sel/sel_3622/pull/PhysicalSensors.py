@@ -52,6 +52,7 @@ def input_contact(s: BeautifulSoup) -> dict[str, Any]:
     """
 
     # TODO: extract most recent events
+    # NOTE: the sample device seems to have broken sensors
     ic_current_state = s.find("td", {"id": "ic_current_state"})
     if not isinstance(ic_current_state, Tag):
         raise Exception("Could not get field")
@@ -70,6 +71,7 @@ def light_sensor(s: BeautifulSoup) -> dict[str, Any]:
     """
 
     # TODO: extract most recent events
+    # NOTE: the sample device seems to have broken sensors
     LS_MAP = ["High", "Medium", "Low"]
 
     sensitivity = get_radio_value(s, "ls_sensitivity_id")
@@ -94,6 +96,7 @@ def motion_sensor(s: BeautifulSoup) -> dict[str, Any]:
     """
 
     # TODO: extract most recent events
+    # NOTE: the sample device seems to have broken sensors
     ACCEL_MAP = ["Tilt Only", "Impact and Tilt"]
 
     sensitivity = get_radio_value(s, "accelerometer_sensitivity_id")
