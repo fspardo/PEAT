@@ -134,7 +134,7 @@ def pull_physical_sensors(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result["enabled"] = enabled(soup)
     result["input_contact"] = input_contact(soup)
-    result["light_sensor"] = light_sensor(soup)
-    result["motion_sensor"] = motion_sensor(soup)
+    result["light"] = light_sensor(soup)
+    result["motion"] = motion_sensor(soup)
 
-    return result
+    return {"sensors": result}
