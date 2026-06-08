@@ -14,5 +14,6 @@ Authors:
     - Francisco Santana <fsantan@sandia.gov>
 """
 
-from .FileManagement import pull_file_management
 from .UsagePolicy import pull_usage_policy
+from .PhysicalSensors import pull_physical_sensors
+from .FileManagement import pull_file_management
