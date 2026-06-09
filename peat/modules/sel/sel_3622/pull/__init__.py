@@ -16,13 +16,14 @@ Authors:
 
 # System
 
+from .UsagePolicy import pull_usage_policy
 from .FileManagement import pull_file_management
 from .PhysicalSensors import pull_physical_sensors
 
 # User
 # Network
+from .NetworkSettings import pull_network_settings
 from .StaticRoutes import pull_static_routes
-from .UsagePolicy import pull_usage_policy
 
 # Serial Ports
 
