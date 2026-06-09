@@ -79,8 +79,70 @@ def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> dict[
     ]
     | str,
 ]:
+    """
+    Retrieve network addresses
+    """
+    table = soup.find("table", {"id": "EthernetAddress"})
+    assert isinstance(table, Tag)  # Table should exist
 
-    return {"implemented": "not"}
+    entries = table.find_all("tr")[1:]  # Skip title
+
+    def get_row(
+        row: Tag, session: HTTP3622
+    ) -> tuple[
+        str, dict[Literal["interface", "ip", "vlan", "webserver", "dhcp_client"], Any]
+    ]:
+        repr = {}
+
+        alias = row.find("td", {"class": "ui_AddressAlias"})
+        assert isinstance(alias, Tag)
+        alias = alias.get_text(strip=True)
+
+        col = row.find("td", {"class": "ui_InterfaceAlias"})
+        assert isinstance(col, Tag)
+        repr["interface"] = col.get_text(strip=True)
+
+        col = row.find("td", {"class": "ui_IP"})
+        assert isinstance(col, Tag)
+        repr["address"] = col.get_text(strip=True)
+
+        col = row.find("td", {"class": "ui_VLAN"})
+        assert isinstance(col, Tag)
+        val = col.get_text(strip=True)  # Only include the VLAN ID if there is one
+        if val.isnumeric():
+            repr["vlan"] = int(val)
+
+        col = row.find("td", {"class": "ui_WebServer"})
+        assert isinstance(col, Tag)
+        repr["webserver"] = col.get_text(strip=True)
+
+        col = row.find("a", {"title": "Update"})
+        assert isinstance(col, Tag)
+        uri = col.attrs["href"]
+        assert isinstance(uri, str)
+
+        response = session.get(uri)
+        if not response:  # This may be a big problem
+            log.error("No response")
+            return alias, repr
+        if response.status_code != 200:
+            log.error(f"Got non-200 status: {response.status_code}")
+            return alias, repr
+        if response.history:
+            log.error("Redirected")
+            return alias, repr
+
+        soup2 = session.gen_soup(response.text)
+
+        elem = soup2.find("input", {"type": "checkbox", "id": "dhcp"})
+        assert isinstance(elem, Tag)
+        repr["dhcp_client"] = elem.attrs["value"] == "true"
+
+        return alias, repr
+
+    result = [get_row(entry, session) for entry in entries]
+
+    return {name: repr for name, repr in result}
 
 
 def pull_network_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
