@@ -113,16 +113,11 @@ class SEL3622(DeviceModule):
             pull_usage_policy,
             pull_file_management,
             pull_physical_sensors,
-
             # User
-
             # Network
-            pull_static_routes
-
+            pull_static_routes,
             # Serial Ports
-
             # Security
-
             # Reports
         ]
         pulled_config = {}

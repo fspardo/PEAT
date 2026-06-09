@@ -8,9 +8,9 @@ from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
+from loguru import logger as log
 
 from peat import DeviceData
-from loguru import logger as log
 
 from ..http import HTTP3622
 
@@ -110,6 +110,4 @@ def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     table = pull_table(session)
     rows = table.find_all("tr")
 
-    return {
-        "static_routes": {id: data for id, data in extract_rows(rows[1:])}
-    }
+    return {"static_routes": {id: data for id, data in extract_rows(rows[1:])}}
