@@ -89,7 +89,11 @@ def extract_rows(rows: ResultSet) -> list[tuple[str, dict[str, Any]]]:
     """
     Extracts ALL rows from the result set
     """
-    return [extract_row(row) for row in rows if isinstance(row, Tag)]
+    return [
+        extract_row(row)  # Extract row data
+        for row in rows
+        if isinstance(row, Tag) and "id" in row.attrs
+    ]
 
 
 def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
