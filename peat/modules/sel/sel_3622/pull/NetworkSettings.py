@@ -114,7 +114,7 @@ def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> dict[
 
         col = row.find("td", {"class": "ui_WebServer"})
         assert isinstance(col, Tag)
-        repr["webserver"] = col.get_text(strip=True)
+        repr["webserver"] = col.get_text(strip=True) == "Yes"
 
         col = row.find("a", {"title": "Update"})
         assert isinstance(col, Tag)
@@ -149,9 +149,24 @@ def pull_network_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /NetworkSettings.sel
 
-    | Field                                | Description                                                             |
-    |--------------------------------------|-------------------------------------------------------------------------|
-    | `network`                            | Root container of the configuration                                     |
+    | Field                                   | Description                                                    |
+    |-----------------------------------------|----------------------------------------------------------------|
+    | `network`                               | Root container of the configuration                            |
+    | `network.global`                        | Global configuration container                                 |
+    | `network.global.hostname`               | Hostname of the device                                         |
+    | `network.global.domain`                 | Domain the device exists in                                    |
+    | `network.global.gateway`                | Default gateway for the device                                 |
+    | `network.interfaces`                    | Lists the network interfaces for the device                    |
+    | `network.interfaces.[name]`             | The name of the interface being listed                         |
+    | `network.interfaces.[name].status`      | The status of the listed interface                             |
+    | `network.interfaces.[name].configured`  | Whether the interface is configured                            |
+    | `network.addresses`                     | The list of configured addresses on the device                 |
+    | `network.addresses.[alias]`             | The alias of the network address being listed                  |
+    | `network.addresses.[alias].interface`   | The interface to which the listed address is assigned          |
+    | `network.addresses.[alias].ip`          | The IP address assigned to the listed interface                |
+    | `network.addresses.[alias].vlan`        | If the address is associated to a VLAN, the VLAN ID            |
+    | `network.addresses.[alias].webserver`   | Whether the web server is configured to listen to this address |
+    | `network.addresses.[alias].dhcp_client` | Whether the address was configured using DHCP                  |
 
     """
 
@@ -168,7 +183,7 @@ def pull_network_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     return {
         "network": {
             "global": get_global_cfg(soup, session),
-            "nics": get_nics(soup, session),
+            "interfaces": get_nics(soup, session),
             "addresses": get_addresses(soup, session),
         }
     }
