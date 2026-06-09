@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 
 from peat import DeviceData
-from loguru import Logger
+from loguru import logger as log
 
 from ..http import HTTP3622
 
@@ -55,7 +55,7 @@ def get_connection_rule(row: Tag) -> Literal["Forward", "Drop", "Reject"]:
         raise Exception("Could not get rule")
 
 
-def extract_row(log: Logger, row: Tag) -> tuple[str, dict[str, Any]]:
+def extract_row(row: Tag) -> tuple[str, dict[str, Any]]:
     """
     Extracts the static route configuration from a row of the table
     """
@@ -86,11 +86,11 @@ def extract_row(log: Logger, row: Tag) -> tuple[str, dict[str, Any]]:
     return id, result
 
 
-def extract_rows(log: Logger, rows: list[Tag]) -> list[tuple[str, dict[str, Any]]]:
+def extract_rows(rows: list[Tag]) -> list[tuple[str, dict[str, Any]]]:
     """
     Extracts ALL rows from the result set
     """
-    return [extract_row(log, row) for row in rows]  # Extract row data
+    return [extract_row(row) for row in rows]  # Extract row data
 
 
 def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -111,5 +111,5 @@ def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     rows = table.find_all("tr")
 
     return {
-        "static_routes": {id: data for id, data in extract_rows(session.log, rows[1:])}
+        "static_routes": {id: data for id, data in extract_rows(rows[1:])}
     }
