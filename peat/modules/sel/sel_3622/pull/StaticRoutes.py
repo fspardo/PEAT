@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 
 from peat import DeviceData
+from loguru import Logger
 
 from ..http import HTTP3622
 
@@ -54,46 +55,42 @@ def get_connection_rule(row: Tag) -> Literal["Forward", "Drop", "Reject"]:
         raise Exception("Could not get rule")
 
 
-def extract_row(row: Tag) -> tuple[str, dict[str, Any]]:
+def extract_row(log: Logger, row: Tag) -> tuple[str, dict[str, Any]]:
     """
     Extracts the static route configuration from a row of the table
     """
     result = {}
     id = row.attrs["id"]
+    log.debug(f"id={id}")
 
     action = get_connection_rule(row)
+    log.debug(f"--> action={action}")
 
     gateway = row.find("td", {"class": "remoteGateway"})
     assert isinstance(gateway, Tag)
-
-    gateway = gateway.get_text(separator=",", strip=True).split(",")
-    gateway_name = gateway[0]
-    gateway_addr = gateway[1]
+    gateway = gateway.get_text(",").split(",")
+    log.debug(f"--> gateway={gateway}")
 
     remote = row.find("td", {"class": "remoteNetwork"})
     assert isinstance(remote, Tag)
-
-    remote = remote.get_text(separator=",", strip=True).split(",")[1]
+    remote = remote.get_text(",").split(",")[1]
+    log.debug(f"--> remote={remote}")
 
     result["action"] = action
     result["network"] = remote
 
     if action == "Forward":
-        result["gateway_address"] = gateway_addr
-        result["gateway_name"] = gateway_name
+        result["gateway_name"] = gateway[0]
+        result["gateway_address"] = gateway[1]
 
     return id, result
 
 
-def extract_rows(rows: ResultSet) -> list[tuple[str, dict[str, Any]]]:
+def extract_rows(log: Logger, rows: list[Tag]) -> list[tuple[str, dict[str, Any]]]:
     """
     Extracts ALL rows from the result set
     """
-    return [
-        extract_row(row)  # Extract row data
-        for row in rows
-        if isinstance(row, Tag) and "id" in row.attrs
-    ]
+    return [extract_row(log, row) for row in rows]  # Extract row data
 
 
 def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -113,4 +110,6 @@ def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     table = pull_table(session)
     rows = table.find_all("tr")
 
-    return {"static_routes": {id: data for id, data in extract_rows(rows)}}
+    return {
+        "static_routes": {id: data for id, data in extract_rows(session.log, rows[1:])}
+    }
