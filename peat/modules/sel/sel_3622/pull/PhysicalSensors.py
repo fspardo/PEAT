@@ -118,6 +118,14 @@ def motion_sensor(s: BeautifulSoup) -> dict[str, Any]:
 def pull_physical_sensors(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration of the physical sensors page
+
+    | Field                   | Description                                          |
+    |-------------------------|------------------------------------------------------|
+    | `sensors.enabled`       | Whether the sensors are enabled                      |
+    | `sensors.input_contact` | Whether the Input Contact sensor is enabled          |
+    | `sensors.light`         | Whether the Light sensor is enabled                  |
+    | `sensors.motion`        | Whether the Motion sensor (accelerometer) is enabled |
+
     """
 
     result = {}
