@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 """
 Pull methods for different endpoints.
 
@@ -14,21 +15,21 @@ Authors:
     - Francisco Santana <fsantan@sandia.gov>
 """
 
-# System
+# Sorting has been disabled to make imports match the ordering of the UI on the SEL
 
+# System
 from .UsagePolicy import pull_usage_policy
 from .FileManagement import pull_file_management
 from .PhysicalSensors import pull_physical_sensors
 
 # User
+
 # Network
 from .NetworkSettings import pull_network_settings
 from .StaticRoutes import pull_static_routes
 
 # Serial Ports
 
-
 # Security
-
 
 # Reports

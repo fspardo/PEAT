@@ -73,7 +73,9 @@ def get_nics(  # Segregable
     return result
 
 
-def get_addresses(soup: BeautifulSoup) -> tuple[  # Segregable
+def get_addresses(
+    soup: BeautifulSoup,
+) -> tuple[  # Segregable
     dict[Literal["interface", "ip", "vlan", "webserver"], Any],
     dict[str, list[str]],
 ]:
@@ -85,7 +87,9 @@ def get_addresses(soup: BeautifulSoup) -> tuple[  # Segregable
 
     entries = table.find_all("tr")[1:]  # Skip title
 
-    def get_row(row: Tag) -> tuple[
+    def get_row(
+        row: Tag,
+    ) -> tuple[
         str,
         dict[Literal["interface", "ip", "vlan", "webserver"], Any],
         bool,
@@ -163,7 +167,6 @@ def pull_network_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     | `network.addresses.[alias].webserver`   | Whether the web server is configured to listen to this address                   |
     | `network.bridges`                       | If bridges are present, contains a mapping of bridge names to bridged interfaces |
     | `network.bridges.[alias]`               | Contains a list of interface names associated with the bridge                    |
-
     """
 
     response = session.get_endpoint("network_settings")
