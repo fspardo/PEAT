@@ -93,8 +93,10 @@ def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> tuple[
         repr = {}
 
         alias = row.find("td", {"class": "ui_AddressAlias"})
-        assert isinstance(alias, Tag)
-        alias = alias.get_text(strip=True)
+        if isinstance(alias, Tag):
+            alias = alias.get_text(strip=True)
+        else:
+            alias = ""
 
         col = row.find("td", {"class": "ui_InterfaceAlias"})
         assert isinstance(col, Tag)
