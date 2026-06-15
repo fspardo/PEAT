@@ -15,8 +15,8 @@ from peat import DeviceData
 from ..http import HTTP3622
 
 
-def get_global_cfg(
-    soup: BeautifulSoup, session: HTTP3622
+def get_global_cfg(  # Segregable
+    soup: BeautifulSoup,
 ) -> dict[Literal["hostname", "domain", "gateway", "dhcp_gateway"], Any]:
     """
     Retrieve the global configuration
@@ -43,8 +43,8 @@ def get_global_cfg(
     return result
 
 
-def get_nics(
-    soup: BeautifulSoup, _: HTTP3622
+def get_nics(  # Segregable
+    soup: BeautifulSoup,
 ) -> dict[str, dict[Literal["status", "configured"], bool]]:
     """
     Retrieve NIC status
@@ -73,7 +73,7 @@ def get_nics(
     return result
 
 
-def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> tuple[
+def get_addresses(soup: BeautifulSoup) -> tuple[  # Segregable
     dict[Literal["interface", "ip", "vlan", "webserver"], Any],
     dict[str, list[str]],
 ]:
@@ -85,7 +85,7 @@ def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> tuple[
 
     entries = table.find_all("tr")[1:]  # Skip title
 
-    def get_row(row: Tag, session: HTTP3622) -> tuple[
+    def get_row(row: Tag) -> tuple[
         str,
         dict[Literal["interface", "ip", "vlan", "webserver"], Any],
         bool,
@@ -119,7 +119,7 @@ def get_addresses(soup: BeautifulSoup, session: HTTP3622) -> tuple[
         return alias, repr, "odd" in row.attrs["class"]
 
     # Parse all rows. This may be done the same regardless of the contents of the row
-    parsed = [get_row(entry, session) for entry in entries]
+    parsed = [get_row(entry) for entry in entries]
 
     # Process the results. Bridged interfaces will all be either even or odd if they belong to the same bridge
     addresses = {}
@@ -177,12 +177,12 @@ def pull_network_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     soup = session.gen_soup(response.text)
 
-    addresses, bridges = get_addresses(soup, session)
+    addresses, bridges = get_addresses(soup)
 
     return {
         "network": {
-            "global": get_global_cfg(soup, session),
-            "interfaces": get_nics(soup, session),
+            "global": get_global_cfg(soup),
+            "interfaces": get_nics(soup),
             "addresses": addresses,
             "bridges": bridges,
         }
