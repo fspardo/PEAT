@@ -15,8 +15,9 @@ from ..parse.Users import parse_user_info
 
 
 def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, Any]:
-    result = {}
-
+    """
+    Pull extended user info
+    """
     # Get the URL from the Update button
     update = row.find("td", {"title": "Update"})
     if not isinstance(update, Tag):
@@ -39,12 +40,34 @@ def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, An
     if response.history:
         raise Exception("Redirected")
 
-    result.update(parse_user_info(dev, response.text))
-
-    return result
+    return parse_user_info(dev, response.text)
 
 
 def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+    """
+    Pull registered users
+
+    | Field                                   | Description                                                             |
+    |-----------------------------------------|-------------------------------------------------------------------------|
+    | `local_users`                           | Root container                                                          |
+    | `local_users.[username]`                | Container for an individual user's account information                  |
+    | `local_users.[username].username`       | User's username                                                         |
+    | `local_users.[username].first_name`     | User's forename                                                         |
+    | `local_users.[username].last_name`      | User's surname                                                          |
+    | `local_users.[username].title`          | User's title                                                            |
+    | `local_users.[username].division`       | User's division                                                         |
+    | `local_users.[username].identification` | User's identification                                                   |
+    | `local_users.[username].address`        | User's address                                                          |
+    | `local_users.[username].city`           | User's city                                                             |
+    | `local_users.[username].state`          | User's state                                                            |
+    | `local_users.[username].country`        | User's country                                                          |
+    | `local_users.[username].postal_code`    | User's postal/ZIP code                                                  |
+    | `local_users.[username].work_phone`     | User's work phone number                                                |
+    | `local_users.[username].mobile_phone`   | User's mobile phone number                                              |
+    | `local_users.[username].email`          | User's email address                                                    |
+    | `local_users.[username].admin`          | Whether the user is an administrator                                    |
+    | `local_users.[username].enabled`        | Whether the user's account is enabled (can log in)                      |
+    """
     result = {}
 
     # Get the page
@@ -73,4 +96,4 @@ def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     for row in rows:
         result.update(pull_user_info(dev, session, row))
 
-    return {"users": result}
+    return {"local_users": result}

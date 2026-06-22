@@ -52,7 +52,7 @@ USER_FORM_FIELDS = {
     "enabled": "Enabled",
 }
 
-USER_DATES = {
+USER_TABLE_FIELDS = {
     "created": "ui_CreationDate",
     "last_login": "ui_LastLoginDate",
     "last_password_update": "ui_PasswordModDate",
@@ -61,7 +61,7 @@ USER_DATES = {
 
 def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
     """
-    Parse an individual user's data
+    Parse an individual user's data (must be a /Users_Form.sel page)
     """
     result = {}
 
@@ -72,7 +72,12 @@ def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
         raise Exception("Failed to find update form")
 
     for field, id in USER_FORM_FIELDS:
-        result[field] = get_field(form, id)
+        data = get_field(form, id)
+
+        if field == "username" and data == "":
+            raise Exception(f"Bad field entry: username is empty")
+
+        result[field] = "N/A" if data == "" else data
 
     table = soup.find("table", {"id": "localUser"})
     if not isinstance(table, Tag):
@@ -82,7 +87,7 @@ def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
     if not isinstance(row, Tag):
         raise Exception(f"Failed to find row corresponding to {result['username']}")
 
-    for field, id in USER_DATES:
+    for field, id in USER_TABLE_FIELDS:
         time = row.find("div", {"class": id})
         result[field] = (
             "N/A" if not isinstance(time, Tag) else time.get_text(strip=True)
