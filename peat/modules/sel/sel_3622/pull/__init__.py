@@ -6,6 +6,9 @@ Ideally, scripts involved in pulling data from the device should go
 in this directory, and a singular function that returns a dictionary
 should be exported from each module.
 
+Each function should return a dictionary containing the configuration of 
+the designated endpoint.
+
 The prototype of each function should be:
     (dev: DeviceData, session: HTTP3622) -> dict[str, Any]
 
@@ -23,6 +26,7 @@ from .FileManagement import pull_file_management
 from .PhysicalSensors import pull_physical_sensors
 
 # User
+from .Users import pull_users
 
 # Network
 from .NetworkSettings import pull_network_settings
