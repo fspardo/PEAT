@@ -80,9 +80,6 @@ def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.history:
         raise Exception("Redirected")
 
-    # Save main HTML file to root
-    dev.write_file(response.text, "Users.sel.html", False, dev.get_out_dir() / "pulled")
-
     # Parse
     soup = session.gen_soup(response.text)
 
