@@ -71,7 +71,8 @@ def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
     if not isinstance(form, Tag):
         raise Exception("Failed to find update form")
 
-    for field, id in USER_FORM_FIELDS:
+    for field in USER_FORM_FIELDS:
+        id = USER_FORM_FIELDS[field]
         data = get_field(form, id)
 
         if field == "username" and data == "":
@@ -87,7 +88,8 @@ def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
     if not isinstance(row, Tag):
         raise Exception(f"Failed to find row corresponding to {result['username']}")
 
-    for field, id in USER_TABLE_FIELDS:
+    for field in USER_TABLE_FIELDS:
+        id = USER_TABLE_FIELDS[field]
         time = row.find("div", {"class": id})
         result[field] = (
             "N/A" if not isinstance(time, Tag) else time.get_text(strip=True)
