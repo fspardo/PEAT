@@ -19,7 +19,7 @@ def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, An
     Pull extended user info
     """
     # Get the URL from the Update button
-    update = row.find("td", {"title": "Update"})
+    update = row.find("a", {"title": "Update"})
     if not isinstance(update, Tag):
         return {}
     # Get redirect path
