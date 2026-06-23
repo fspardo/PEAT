@@ -27,6 +27,7 @@ from .PhysicalSensors import pull_physical_sensors
 
 # User
 from .Users import pull_users
+from .LDAP import pull_ldap_settings
 
 # Network
 from .NetworkSettings import pull_network_settings
