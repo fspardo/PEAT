@@ -115,6 +115,7 @@ class SEL3622(DeviceModule):
             pull_physical_sensors,
             # User
             pull_users,
+            pull_ldap_settings,
             # Network
             pull_network_settings,
             pull_static_routes,
