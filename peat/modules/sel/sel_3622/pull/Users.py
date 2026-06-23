@@ -40,7 +40,7 @@ def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, An
     if response.history:
         raise Exception("Redirected")
 
-    return parse_user_info(dev, response.text)
+    return parse_user_info(dev, session.gen_soup(response.text))
 
 
 def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
