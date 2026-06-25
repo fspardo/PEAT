@@ -6,6 +6,8 @@ Author: Francisco Santana <fsantan@sandia.gov>
 
 from typing import Any
 
+from loguru import logger
+
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
@@ -50,6 +52,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         raise Exception("Could not find config table")
 
     config = {}
+    logger.debug("/// Parsing global settings...")
     for key in GLOBAL_SETTINGS:
         config[key] = table.find("td", {"id": GLOBAL_SETTINGS[key]})
     result["config"] = config
@@ -61,6 +64,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     list = table.find_all("tr")[1:]
 
     servers = {}
+    logger.debug("/// Parsing LDAP server list...")
     for row in list:
         r = {}
         for key in LDAP_SERVER_LIST:
@@ -75,6 +79,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         raise Exception("Could not find server list table")
 
     attrs = {}
+    logger.debug("/// Parsing attributes...")
     for pair in ATTRIBUTE_STRINGS:
         p = {}
         for k in pair:
@@ -89,6 +94,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     list = table.find_all("tr")[1:]
 
     groupmaps = {}
+    logger.debug("/// Parsing group mappings...")
     for row in list:
         r = {}
         for key in GROUP_MAPPINGS:

@@ -1,0 +1,16 @@
+{
+    "folders": [
+        {
+            "name": "root",
+            "path": "."
+        },
+        {
+            "name": "peat",
+            "path": "./peat"
+        },
+        {
+            "name": "sel-3622",
+            "path": "./peat/modules/sel/sel_3622"
+        }
+    ]
+}

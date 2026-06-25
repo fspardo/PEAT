@@ -14,6 +14,7 @@ from peat import DeviceData
 
 from ..http import HTTP3622
 from ..parse.LDAP import parse_settings
+from loguru import logger
 
 
 def pull_ldap_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -38,6 +39,7 @@ def pull_ldap_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     | `users.ldap.group_mappings`              | A list of group mappings.                               |
     | `users.ldap.group_mappings.[role]`       | The name of the role (tech/admin), with its list of DNs |
     """
+    logger.debug("Pulling page...")
     response = session.get_endpoint("ldap_settings")
 
     if not response:
@@ -48,6 +50,7 @@ def pull_ldap_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
         raise Exception("Redirected")
 
     soup = session.gen_soup(response.text)
+    logger.debug("Parsing page...")
     result = parse_settings(soup)
 
     return {"users": {"ldap": result}}
