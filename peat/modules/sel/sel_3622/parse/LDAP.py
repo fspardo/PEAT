@@ -54,7 +54,9 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     config = {}
     logger.debug("/// Parsing global settings...")
     for key in GLOBAL_SETTINGS:
-        config[key] = table.find("td", {"id": GLOBAL_SETTINGS[key]})
+        v = table.find("td", {"id": GLOBAL_SETTINGS[key]})
+        assert isinstance(v, Tag)
+        config[key] = v.get_text(strip=True)
     result["config"] = config
 
     table = soup.find("table", {"id": LDAP_SERVER_LIST_NAME})
@@ -68,7 +70,9 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     for row in list:
         r = {}
         for key in LDAP_SERVER_LIST:
-            r[key] = row.find("td", {"id": key})
+            v = row.find("td", {"id": key})
+            assert isinstance(v, Tag)
+            r[key] = v.get_text(strip=True)
         hostname = r["ldap_hostname"]
         del r["ldap_hostname"]
         servers[hostname] = r
@@ -83,7 +87,9 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     for pair in ATTRIBUTE_STRINGS:
         p = {}
         for k in pair:
-            p[k] = table.find("td", {"id": pair[k]})
+            v = table.find("td", {"id": pair[k]})
+            assert isinstance(v, Tag)
+            p[k] = v.get_text(strip=True)
         attrs[p["label"]] = p["attribute"]
     result["attributes"] = attrs
 
@@ -98,7 +104,9 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     for row in list:
         r = {}
         for key in GROUP_MAPPINGS:
-            r[key] = row.find("td", {"id": GROUP_MAPPINGS[key]})
+            v = row.find("td", {"id": GROUP_MAPPINGS[key]})
+            assert isinstance(v, Tag)
+            r[key] = v.get_text(strip=True)
 
         if r["role"] not in groupmaps:
             groupmaps[r["role"]] = []
