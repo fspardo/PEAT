@@ -49,24 +49,24 @@ def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     | Field                                   | Description                                                             |
     |-----------------------------------------|-------------------------------------------------------------------------|
-    | `local_users`                           | Root container                                                          |
-    | `local_users.[username]`                | Container for an individual user's account information                  |
-    | `local_users.[username].username`       | User's username                                                         |
-    | `local_users.[username].first_name`     | User's forename                                                         |
-    | `local_users.[username].last_name`      | User's surname                                                          |
-    | `local_users.[username].title`          | User's title                                                            |
-    | `local_users.[username].division`       | User's division                                                         |
-    | `local_users.[username].identification` | User's identification                                                   |
-    | `local_users.[username].address`        | User's address                                                          |
-    | `local_users.[username].city`           | User's city                                                             |
-    | `local_users.[username].state`          | User's state                                                            |
-    | `local_users.[username].country`        | User's country                                                          |
-    | `local_users.[username].postal_code`    | User's postal/ZIP code                                                  |
-    | `local_users.[username].work_phone`     | User's work phone number                                                |
-    | `local_users.[username].mobile_phone`   | User's mobile phone number                                              |
-    | `local_users.[username].email`          | User's email address                                                    |
-    | `local_users.[username].admin`          | Whether the user is an administrator                                    |
-    | `local_users.[username].enabled`        | Whether the user's account is enabled (can log in)                      |
+    | `users.local`                           | Root container                                                          |
+    | `users.local.[username]`                | Container for an individual user's account information                  |
+    | `users.local.[username].username`       | User's username                                                         |
+    | `users.local.[username].first_name`     | User's forename                                                         |
+    | `users.local.[username].last_name`      | User's surname                                                          |
+    | `users.local.[username].title`          | User's title                                                            |
+    | `users.local.[username].division`       | User's division                                                         |
+    | `users.local.[username].identification` | User's identification                                                   |
+    | `users.local.[username].address`        | User's address                                                          |
+    | `users.local.[username].city`           | User's city                                                             |
+    | `users.local.[username].state`          | User's state                                                            |
+    | `users.local.[username].country`        | User's country                                                          |
+    | `users.local.[username].postal_code`    | User's postal/ZIP code                                                  |
+    | `users.local.[username].work_phone`     | User's work phone number                                                |
+    | `users.local.[username].mobile_phone`   | User's mobile phone number                                              |
+    | `users.local.[username].email`          | User's email address                                                    |
+    | `users.local.[username].admin`          | Whether the user is an administrator                                    |
+    | `users.local.[username].enabled`        | Whether the user's account is enabled (can log in)                      |
     """
     result = {}
 
