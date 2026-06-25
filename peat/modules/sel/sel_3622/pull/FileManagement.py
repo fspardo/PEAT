@@ -333,6 +333,18 @@ class SystemSettingsPoller:
             self.connection_directory_hash,
         )
 
+def initialize_file_management_pull(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
+    """
+    Prepares the FileManagement pull. Returns an empty dictionary.
+    """
+    ssp = SystemSettingsPoller(http)
+    if not ssp.queue():  # Attempt to queue the creation of the configuration file
+        raise Exception("Failed to queue system file generation")
+
+    dev._cache[SystemSettingsPoller] = ssp
+
+    return {}
+
 
 def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     """
@@ -354,9 +366,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     | `connection_directory_config_hash`          | The hash of the last uploaded Connection Directory configuration file. |
     """
 
-    ssp = SystemSettingsPoller(http)
-    if not ssp.queue():  # Attempt to queue the creation of the configuration file
-        raise Exception("Failed to queue system file generation")
+    ssp = dev._cache[SystemSettingsPoller]
 
     # Query once every 30 seconds, for a total of 300s (5m).
     # Querying this way ensures we do not retrieve an outdated version of the backup

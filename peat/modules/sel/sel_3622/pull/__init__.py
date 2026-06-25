@@ -22,7 +22,7 @@ Authors:
 
 # System
 from .UsagePolicy import pull_usage_policy
-from .FileManagement import pull_file_management
+from .FileManagement import pull_file_management, initialize_file_management_pull
 from .PhysicalSensors import pull_physical_sensors
 
 # User
