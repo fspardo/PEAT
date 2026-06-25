@@ -393,7 +393,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
         if not sys_settings:
             raise Exception("Error in querying system settings")
 
-    # Odds are, if it has failed after about two minutes of attempts, then there were
+    # Odds are, if it has failed after multiple attempts, then there were
     # no changes to the backup file.
     if not isinstance(sys_settings, SystemSettings):
         log.info("Pulling system configuration backup...")
