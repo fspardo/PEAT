@@ -93,4 +93,4 @@ def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     for row in rows:
         result.update(pull_user_info(dev, session, row))
 
-    return {"users": {"local": result}}
+    return {"users": result}
