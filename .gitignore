@@ -200,3 +200,5 @@ celerybeat-schedule
 
 # Swap files
 *.swp
+
+*.code-workspace
