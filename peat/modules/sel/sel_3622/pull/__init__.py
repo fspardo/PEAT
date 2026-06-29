@@ -6,7 +6,7 @@ Ideally, scripts involved in pulling data from the device should go
 in this directory, and a singular function that returns a dictionary
 should be exported from each module.
 
-Each function should return a dictionary containing the configuration of 
+Each function should return a dictionary containing the configuration of
 the designated endpoint.
 
 The prototype of each function should be:
@@ -28,6 +28,7 @@ from .PhysicalSensors import pull_physical_sensors
 # User
 from .Users import pull_users
 from .LDAP import pull_ldap_settings
+from .RADIUS import pull_radius_settings
 
 # Network
 from .NetworkSettings import pull_network_settings

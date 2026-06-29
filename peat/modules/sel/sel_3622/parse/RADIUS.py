@@ -64,13 +64,13 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         raise Exception("Could not find config table")
 
     for checkbox in SETTINGS_TABLE_CHECKBOXES:
-        v = table.find("input", {"name": checkbox})
+        v = table.find("input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]})
         assert isinstance(v, Tag)
-        result[checkbox] = v.get("value") == "true"
+        result[checkbox] = v.get("checked", "no") == "checked"
 
     for dropdown in SETTINGS_TABLE_HOST_DROPDOWNS:
         # Get the dropdown item in the table
-        v = table.find("select", {"id": dropdown})
+        v = table.find("select", {"id": SETTINGS_TABLE_HOST_DROPDOWNS[dropdown]})
         assert isinstance(v, Tag)
         # Get the selected option
         s = v.find("option", {"selected": "selected"})
@@ -104,14 +104,15 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     # For hosts that have an address, get their ports as well.
     for host in get_host_ports:
         if host in SETTINGS_TABLE_HOST_PORTS:
-            for portname, default in SETTINGS_TABLE_HOST_PORTS[host]:
-                v = table.find("input", {"id": portname})
+            for portname in SETTINGS_TABLE_HOST_PORTS[host]:
+                p, d = SETTINGS_TABLE_HOST_PORTS[host][portname]
+                v = table.find("input", {"id": p})
                 assert isinstance(v, Tag)
                 port = v.get("value", "")
                 assert isinstance(port, str)
 
                 if port == "":
-                    port = default
+                    port = d
                 result[host][portname] = int(port)
 
     v = table.find("select", {"name": "RADIUSAuthTypeId"})
