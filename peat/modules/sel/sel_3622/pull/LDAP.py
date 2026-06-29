@@ -49,8 +49,5 @@ def pull_ldap_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.history:
         raise Exception("Redirected")
 
-    soup = session.gen_soup(response.text)
     logger.debug("Parsing page...")
-    result = parse_settings(soup)
-
-    return result
+    return parse_settings(session.gen_soup(response.text))
