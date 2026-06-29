@@ -26,7 +26,7 @@ def pull_dictionary(
     if not isinstance(t, Tag):
         logger.error("Could not get token value")
         return False
-    
+
     response = session.post_endpoint(
         "radius_settings",
         data={
@@ -53,6 +53,27 @@ def pull_dictionary(
 
 
 def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+    """
+    Pull the configuration under /LDAP.sel
+
+    | Field                                | Description                                                     |
+    |--------------------------------------|-----------------------------------------------------------------|
+    | `radius`                             | Container for parsed data                                       |
+    | `radius.enabled`                     | Whether RADIUS authentication is enabled                        |
+    | `radius.accounting_enabled`          | Whether to account sign-in attempts on the remote server        |
+    | `radius.use_encrypted_usernames`     | Whether to encrypt usernames in transit                         |
+    | `radius.log_accounting_updates`      | Whether to log updates made while accounting RADIUS accounts    |
+    | `radius.verify_server_identity`      | Whether to assert the identity of the server being connected to |
+    | `radius.primary_server`              | The configuration to be used for the primary RADIUS server      |
+    | `radius.secondary_server             | The configuration to be used for the secondary RADIUS server    |
+    | `radius.[server]`                    | If not configured, will be configured with `N/A`                |
+    | `radius.[server].address`            | The IP address of the server, if configured                     |
+    | `radius.[server].hostname`           | The hostname of the server, if configured                       |
+    | `radius.[server].auth`               | The port to use for authentication (default=1812)               |
+    | `radius.[server].acct`               | The port to use for accounting (default=1813)                   |
+    | `radius.[server].auth_type`          | The type of authentication to be used on either server          |
+    | `radius.[server].timeout`            | How long, in seconds, before an attempt is timed out            |
+    """
     logger.debug("Pulling page...")
     response = session.get_endpoint("radius_settings")
 
