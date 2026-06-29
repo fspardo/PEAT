@@ -53,4 +53,4 @@ def pull_ldap_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     logger.debug("Parsing page...")
     result = parse_settings(soup)
 
-    return {"users": {"ldap": result}}
+    return result
