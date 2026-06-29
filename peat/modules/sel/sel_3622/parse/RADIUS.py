@@ -4,16 +4,14 @@ Parse data from /RADIUS.sel.
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
+from pathlib import Path
 from typing import Any, Final
-
-from loguru import logger
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+from loguru import logger
 
 from peat import DeviceData
-
-from pathlib import Path
 
 SETTINGS_TABLE_CHECKBOXES: Final[dict[str, str]] = {
     "enabled": "radius_auth",

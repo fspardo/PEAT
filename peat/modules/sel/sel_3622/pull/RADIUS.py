@@ -8,13 +8,13 @@ from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
+from loguru import logger
 from loguru import logger as log
 
 from peat import DeviceData
 
 from ..http import HTTP3622
 from ..parse.RADIUS import parse_settings
-from loguru import logger
 
 
 def pull_dictionary(
