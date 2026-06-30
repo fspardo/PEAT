@@ -12,9 +12,7 @@ Authors:
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-from .pull import (
-    pull_file_management,
-)
+from .pull import pull_file_management, pull_usage_policy
 
 
 class SEL3622(DeviceModule):
@@ -110,9 +108,10 @@ class SEL3622(DeviceModule):
 
         # TODO: pull
 
-        methods = [ # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
-            pull_file_management
-            ]
+        methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
+            pull_usage_policy,
+            pull_file_management,
+        ]
         pulled_config = {}
 
         tried_methods = 0
@@ -126,6 +125,7 @@ class SEL3622(DeviceModule):
             try:
                 result = method(dev, session)
                 pulled_config.update(result)
+                cls.log.info("Successfully used method")
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
 

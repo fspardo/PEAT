@@ -92,7 +92,7 @@ def pull_info(http: HTTP3622) -> dict[str, str] | None:
     - The token required to initiate a backup file generation *and*
       download a copy of the generated backup file
     """
-    response = http.get(ENDPOINTS["filesystem"], use_cache=False)
+    response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
         http.log.error("No response")
@@ -166,7 +166,7 @@ def pull_hash(http: HTTP3622) -> str | None:
 
     Used to detect whether a new file was generated recently.
     """
-    response = http.get(ENDPOINTS["filesystem"], use_cache=False)
+    response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
         http.log.error("No response")
@@ -237,10 +237,10 @@ class SystemSettingsPoller:
 
         password = get_password()
 
-        response = self.http.post(
-            self.http.endpoint("filesystem"),
+        response = self.http.post_endpoint(
+            "file_management",
             files=form_generate(password, self.token),
-            headers={"Referer": f"https://{self.http.ip}/{ENDPOINTS['filesystem']}"},
+            headers={"Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
         )
 
         if not response:
@@ -294,10 +294,10 @@ class SystemSettingsPoller:
             self.http.log.debug("No change to hash")
             return True
 
-        response = self.http.post(
-            self.http.endpoint("filesystem"),
+        response = self.http.post_endpoint(
+            "file_management",
             files=form_export(self.token),
-            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['filesystem']}"},
+            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
         )
 
         if not response:
@@ -355,7 +355,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     """
 
     ssp = SystemSettingsPoller(http)
-    if not ssp.queue(): # Attempt to queue the creation of the configuration file
+    if not ssp.queue():  # Attempt to queue the creation of the configuration file
         raise Exception("Failed to queue system file generation")
 
     # Query once every 30 seconds, for a total of 300s (5m).
@@ -372,7 +372,6 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
 
         if not sys_settings:
             raise Exception("Error in querying system settings")
-
 
     # Odds are, if it has failed after about two minutes of attempts, then there were
     # no changes to the backup file.

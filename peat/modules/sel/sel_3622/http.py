@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from bs4.element import Tag
 
 from ..sel_http import SELHTTP, Response
-from .endpoints import ENDPOINTS
+from .endpoints import AVAILABLE_ENDPOINTS, ENDPOINTS
 
 
 class HTTP3622(SELHTTP):
@@ -24,11 +24,22 @@ class HTTP3622(SELHTTP):
         else:
             return super().get(*args, **kwargs)
 
-    def endpoint(self, endpoint: str) -> str:
+    def get_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
         """
-        Generate an endpoint
+        Simplification of the "get" function which takes the name of the endpoint
         """
-        endpoint = endpoint.lower()
+        return self.get(ENDPOINTS[page], *args, **kwargs)
+
+    def post_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+        """
+        Simplification of the "post" function which takes the name of the endpoint
+        """
+        return self.post(self.endpoint(page), *args, **kwargs)
+
+    def endpoint(self, endpoint: AVAILABLE_ENDPOINTS) -> str:
+        """
+        Generate an endpoint URL (necessary in post for some reason)
+        """
 
         if endpoint not in ENDPOINTS:
             raise IndexError(f"Endpoint {endpoint} not available")
