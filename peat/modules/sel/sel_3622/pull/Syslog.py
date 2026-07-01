@@ -20,9 +20,17 @@ def pull_syslog_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /Syslog.sel
 
-    | Field | Description |
-    |-------|-------------|
-    |       |             |
+    | Field                                             | Description                                                           |
+    |---------------------------------------------------|-----------------------------------------------------------------------|
+    | `syslog_settings`                                 | Root container                                                        |
+    | `syslog_settings.oldest_unacknowledged`           | Oldest unacknowledged syslog entry                                    |
+    | `syslog_settings.threshold_level`                 | What level of error is logged on the system                           |
+    | `syslog_settings.destinations`                    | Contains a dictionary of destination servers and their configurations |
+    | `syslog_settings.destinations.[name]`             | The name of the destination, mapped to its configuration              |
+    | `syslog_settings.destinations.[name].ip`          | The IP address of the syslog destination server                       |
+    | `syslog_settings.destinations.[name].port`        | The port number to which logs are sent                                |
+    | `syslog_settings.destinations.[name].threshold`   | The level at which a log must be to be sent to this destination       |
+    | `syslog_settings.destinations.[name].description` | The description associated with the destination                       |
     """
 
     logger.debug("Pulling page...")
