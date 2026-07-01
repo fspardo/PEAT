@@ -21,8 +21,10 @@ def pull_local_groups(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
 
-    | Field | Description |
-    |-------|-------------|
+    | Field                  | Description                                                             |
+    |------------------------|-------------------------------------------------------------------------|
+    | `local_groups`         | Root container                                                          |
+    | `local_groups.[group]` | Each group is an object in a dictionary, assigned an array of usernames |
     """
 
     logger.debug("Pulling page...")
