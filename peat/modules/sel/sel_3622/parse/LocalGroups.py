@@ -28,7 +28,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         if not isinstance(gtable, Tag):
             continue
 
-        members = gtable.find_all("td", {"class": "Alias"}, recursive=False)
+        members = gtable.find_all("td", {"class": "Alias"})
 
         result[group] = [member.get_text(strip=True) for member in members]
 
