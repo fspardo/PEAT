@@ -37,7 +37,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     assert isinstance(oum, Tag)
     oum = oum.get_text(strip=True)
 
-    sellvl = soup.find("td", {"class": "loggingThresholdFg"})
+    sellvl = soup.find("td", {"class": "loggingThresholdFG"})
     assert isinstance(sellvl, Tag)
     sellvl = sellvl.get_text(strip=True).removeprefix("Selected Level: ")
 
