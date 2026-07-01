@@ -29,6 +29,7 @@ from .PhysicalSensors import pull_physical_sensors
 from .Users import pull_users
 from .LDAP import pull_ldap_settings
 from .RADIUS import pull_radius_settings
+from .LocalGroups import pull_local_groups
 
 # Network
 from .NetworkSettings import pull_network_settings
