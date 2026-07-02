@@ -10,7 +10,6 @@ from bs4.element import Tag
 
 from peat import DeviceData
 
-from ..endpoints import ENDPOINTS
 from ..http import HTTP3622
 
 
