@@ -24,13 +24,17 @@ class HTTP3622(SELHTTP):
         else:
             return super().get(*args, **kwargs)
 
-    def get_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+    def get_endpoint(
+        self, page: AVAILABLE_ENDPOINTS, *args, **kwargs
+    ) -> Response | None:
         """
         Simplification of the "get" function which takes the name of the endpoint
         """
         return self.get(ENDPOINTS[page], *args, **kwargs)
 
-    def post_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
+    def post_endpoint(
+        self, page: AVAILABLE_ENDPOINTS, *args, **kwargs
+    ) -> Response | None:
         """
         Simplification of the "post" function which takes the name of the endpoint
         """
@@ -87,7 +91,9 @@ class HTTP3622(SELHTTP):
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
-        resp = self.post(self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10))
+        resp = self.post(
+            self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10)
+        )
 
         # Null response means no host
         if not resp:
@@ -96,7 +102,9 @@ class HTTP3622(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
+            self.log.error(
+                f"Login failed: received non-200 response ({resp.status_code})."
+            )
             return False
 
         # Log-in failure
@@ -108,6 +116,17 @@ class HTTP3622(SELHTTP):
         self.gateway = "SEL-3622"
 
         return True
+
+    def get_global_token_value(self) -> str:
+        response = self.get_endpoint("device_reset")
+        if not response or not response.status_code == 200 or len(response.history) > 0:
+            raise Exception("Could not get token")
+
+        soup = self.gen_soup(response.text)
+        t = soup.find("input", {"type": "hidden", "name": "t"})
+        assert isinstance(t, Tag)
+        
+        return t.get_text(strip=True)
 
     def get_fid(self) -> str | None:
         """
