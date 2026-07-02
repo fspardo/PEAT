@@ -81,8 +81,6 @@ def parse_rules(soup: BeautifulSoup) -> dict[str, Any]:
 
     result.update(parse_general_rules(soup))
 
-    result["rules"] = [
-        parse_rule(row) for row in soup.find_all("tr", {"class": ["odd", "even"]})
-    ]
+    result["rules"] = [parse_rule(row) for row in soup.find_all("tr", {"class": ["odd", "even"]})]
 
     return {"firewall": result}
