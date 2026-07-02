@@ -70,6 +70,7 @@ class SEL3622(DeviceModule):
             return None
         else:
             dev._cache["web_session"] = session
+            dev._cache["global_token"] = session.get_global_token_value()
             return session
 
     @classmethod
