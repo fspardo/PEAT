@@ -53,7 +53,7 @@ def parse_rule(tag: Tag) -> dict[str, Any]:
     return result
 
 
-def parse_general_rules(tag: Tag) -> dict[str, Any]:
+def parse_general_rules(soup: BeautifulSoup) -> dict[str, Any]:
     """Parse the general rules table"""
     keys = {
         "drop_ping": "dropPing",
@@ -62,14 +62,14 @@ def parse_general_rules(tag: Tag) -> dict[str, Any]:
         "allow_all_encrypted": "allowAllEncrypted",
     }
 
-    def getinpt(tag: Tag, k: str) -> str:
-        v = tag.find("input", {"id": k})
+    def getinpt(soup: BeautifulSoup, k: str) -> str:
+        v = soup.find("input", {"id": k})
         assert isinstance(v, Tag)
         v = v.get("value")
         assert isinstance(v, str)
         return v
 
-    return {k: getinpt(tag, keys[k]) for k in keys}
+    return {k: getinpt(soup, keys[k]) for k in keys}
 
 
 def parse_rules(soup: BeautifulSoup) -> dict[str, Any]:
@@ -78,9 +78,7 @@ def parse_rules(soup: BeautifulSoup) -> dict[str, Any]:
     """
     result = {}
 
-    tbl = soup.get("table", {"class": "formLayout"})
-    assert isinstance(tbl, Tag)
-    result.update(parse_general_rules(tbl))
+    result.update(parse_general_rules(soup))
 
     tbl = soup.get("table", {"id": "firewallRules"})
     assert isinstance(tbl, Tag)
