@@ -123,4 +123,4 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     assert isinstance(v, Tag)
     result["timeout"] = v.get("value")
 
-    return {"radius": result}
+    return result

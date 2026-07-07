@@ -92,7 +92,7 @@ def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
         logger.error("Failed to pull dictionary")
 
     logger.debug("Parsing page...")
-    result= parse_settings(soup)
-    result["radius"]["dictionary"] = d
-    
-    return result
+    result = parse_settings(soup)
+    result["dictionary"] = d
+
+    return {"radius": result}
