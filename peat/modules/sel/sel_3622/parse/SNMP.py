@@ -31,4 +31,18 @@ def parse_mibs(dev: DeviceData, path: str | Path) -> dict[str, Any]:
 
 
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
-    return {}
+    result = {}
+
+    enabled = soup.find("input", {"id": "Enabled", "type": "checkbox"})
+    assert isinstance(enabled, Tag)
+    result["enabled"] = enabled.get("value") == "true"
+
+    eid = soup.find("table", {"id": "snmp_engine"})
+    assert isinstance(eid, Tag)
+    eid = eid.find("td", {"class": "Alias"})
+    assert isinstance(eid, Tag)
+    result["engine_id" : eid.get_text(strip=True).split(": ")[1]]
+
+    # TODO: parse the rest of the page
+
+    return result
