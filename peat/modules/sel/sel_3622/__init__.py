@@ -127,6 +127,7 @@ class SEL3622(DeviceModule):
             pull_syslog_settings,
             pull_firewall_rules,
             pull_hosts,
+            pull_snmp_settings,
             # Serial Ports
             # Security
             # Reports
@@ -145,6 +146,9 @@ class SEL3622(DeviceModule):
 
             try:
                 result = method(dev, session)
+                for k in result:
+                    if k in pulled_config:
+                        cls.log.warning(f"Key {k} is already present from a previous pull; overwriting...")
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
             except Exception as e:

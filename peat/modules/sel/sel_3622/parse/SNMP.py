@@ -25,9 +25,30 @@ def parse_mibs(dev: DeviceData, path: str | Path) -> dict[str, Any]:
     result = {}
     for file in mibs_dir.iterdir():
         dev.related.files.add(file.parent / file.name)
-        result[file] = file.read_text()
+        text = file.read_text()
+        thash = hash(text)
+        result[str(file.name)] = {
+            "hash": thash,
+            "content": file.read_text().splitlines(),
+        }
 
     return {"mibs": result}
+
+
+PROFILES_COLUMNS = {
+    "name": ["Alias"],
+    "version": ["Version"],
+    "auth": ["AuthenticationProtocol"],
+    "encryption": ["EncryptionProtocol"],
+    "permissions": ["Permissions"],
+}
+
+TRAP_SERVERS_COLUMNS = {
+    "alias": ["ServerAlias"],
+    "address": ["IPAddress"],
+    "profile": ["ProfileAlias"],
+    "traps": ["Traps"],
+}
 
 
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
@@ -41,8 +62,40 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     assert isinstance(eid, Tag)
     eid = eid.find("td", {"class": "Alias"})
     assert isinstance(eid, Tag)
-    result["engine_id" : eid.get_text(strip=True).split(": ")[1]]
+    result["engine_id"] = eid.get_text(strip=True).split(": ")[1]
 
-    # TODO: parse the rest of the page
+    table = soup.find("table", {"id": "snmp_profiles"})
+    assert isinstance(table, Tag)
+    profiles = table.find_all("tr", {"class": ["odd", "even"]})
+
+    for profile in profiles:
+        assert isinstance(profile, Tag)
+        p = {}
+        for col in PROFILES_COLUMNS:
+            r = profile.find("td", {"class": PROFILES_COLUMNS[col]})
+            assert isinstance(r, Tag)
+            r = r.get_text(strip=True)
+
+            if col == "permissions":
+                r = [s.strip() for s in r.split(",")]
+
+            p[col] = r
+
+    table = soup.find("table", {"id": "snmp_trap_servers"})
+    assert isinstance(table, Tag)
+    trap_servers = table.find_all("tr", {"class": ["odd", "even"]})
+
+    for server in trap_servers:
+        assert isinstance(server, Tag)
+        p = {}
+        for col in TRAP_SERVERS_COLUMNS:
+            r = server.find("td", {"class": TRAP_SERVERS_COLUMNS[col]})
+            assert isinstance(r, Tag)
+            r = r.get_text(separator=",", strip=True)
+
+            if col == "traps":
+                r = [s.strip() for s in r.split(",")]
+
+            p[col] = r
 
     return result

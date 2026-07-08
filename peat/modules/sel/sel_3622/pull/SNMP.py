@@ -19,9 +19,25 @@ from ..parse.SNMP import parse_settings, parse_mibs
 
 def pull_snmp_mibs(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     logger.debug("Pulling SNMP MIBs...")
+
+    response = session.get("SNMP_MIBs.sel")
+
+    if not response:
+        raise Exception("No response")
+    if response.status_code != 200:
+        raise Exception("Non-200 status")
+    if len(response.history) > 0:
+        raise Exception("Redirected")
+
+    soup = session.gen_soup(response.text)
+    t = soup.find("input", {"type": "hidden"})
+    assert isinstance(t, Tag)
+    t = t.get("value")
+    assert t
+
     response = session.post(
         f"{session.url}/SNMP_MIBs.sel",
-        data={"submit": "Download", "t": dev._cache["global_token"]},
+        data={"submit": "Download", "t": t},
     )
 
     if not response:
@@ -59,6 +75,9 @@ def pull_snmp_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result = parse_settings(session.gen_soup(response.text))
 
-    result.update(pull_snmp_mibs(dev, session))
+    try:
+        result.update(pull_snmp_mibs(dev, session))
+    except Exception as e:
+        logger.error(f"Failed to pull SNMP MIBs files: {e}")
 
     return {"snmp": result}

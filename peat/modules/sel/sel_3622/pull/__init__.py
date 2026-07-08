@@ -37,6 +37,7 @@ from .StaticRoutes import pull_static_routes
 from .Syslog import pull_syslog_settings
 from .Firewall import pull_firewall_rules
 from .Hosts import pull_hosts
+from .SNMP import pull_snmp_settings
 
 # Serial Ports
 
