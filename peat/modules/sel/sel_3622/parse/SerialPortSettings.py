@@ -35,19 +35,20 @@ def parse_settings(soup: BeautifulSoup) -> list[dict[str, Any]]:
     for e in entries:
         entry = {}
         assert isinstance(e, Tag)
-        state = e.find("td", {"class": ["enabledSerialPort", "disabledSerialPort"]})
-        if isinstance(state, Tag):  # TODO: ensure that this is sufficient
-            entry["state"] = (
-                "Enabled" if state.get("class") == "enabledSerialPort" else "Disabled"
-            )
+        state = e.find("td", {"class": "disabledSerialPort"})
+        if isinstance(state, Tag):
+            entry["state"] = "Disabled"
         else:
-            entry["state"] = "Unknown"
+            entry["state"] = "Enabled"
 
         for c in COLUMNS:
             d = e.find("td", {"class": COLUMNS[c]})
             assert isinstance(d, Tag)
             entry[c] = d.get_text(strip=True)
 
+        logger.debug(
+            f"/// {entry['alias']} is {entry['state']} (baud={entry['baud_rate']}, db={entry['data_bits']}, p={entry['parity']}, sb={entry['stop_bits']}, hwfc={entry['hw_flow_control']}, if={entry['interface']})"
+        )
         result.append(entry)
 
     return result
