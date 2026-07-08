@@ -4,17 +4,17 @@ Pull data from /LocalGroups.sel.
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
+from pathlib import Path
 from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from loguru import logger
-from pathlib import Path
 
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.SNMP import parse_settings, parse_mibs
+from ..parse.SNMP import parse_mibs, parse_settings
 
 
 def pull_snmp_mibs(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -57,8 +57,26 @@ def pull_snmp_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
 
-    | Field | Description |
-    |-------|-------------|
+    | Field                          | Description                                                                |
+    |--------------------------------|----------------------------------------------------------------------------|
+    | `snmp`                         | Root container                                                             |
+    | `snmp.enabled`                 | Whether SNMP is enabled                                                    |
+    | `snmp.engine_id`               | The engine ID reported by the device                                       |
+    | `snmp.profiles`                | The set of configured profiles                                             |
+    | `snmp.profiles[i].name`        | Profile name                                                               |
+    | `snmp.profiles[i].version`     | SNMP versions used by the profile                                          |
+    | `snmp.profiles[i].auth`        | SNMP authentication protocol                                               |
+    | `snmp.profiles[i].encrypton`   | SNMP encryption protocol                                                   |
+    | `snmp.profiles[i].permissions` | Permissions associated with the profile                                    |
+    | `snmp.servers`                 | The set of configured trap servers                                         |
+    | `snmp.servers[i].alias`        | The alias for this trap server                                             |
+    | `snmp.servers[i].address`      | The IP address of this trap server                                         |
+    | `snmp.servers[i].profile`      | The profile being used for this trap server                                |
+    | `snmp.servers[i].traps`        | What this server is trapping from this device                              |
+    | `snmp.mibs`                    | The list of Management Information Base (MIB) objects provided by this SEL |
+    | `snmp.mibs.[name]`             | The name of a SNMP MIB file provided by the SEL                            |
+    | `snmp.mibs.[name].sha256sum`   | The SHA256 checksum of the contents of this MIBs                           |
+    | `snmp.mibs.[name].content`     | The contents of this MIB file, split by line                               |
     """
 
     logger.debug("Pulling page...")

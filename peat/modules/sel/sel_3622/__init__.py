@@ -148,7 +148,9 @@ class SEL3622(DeviceModule):
                 result = method(dev, session)
                 for k in result:
                     if k in pulled_config:
-                        cls.log.warning(f"Key {k} is already present from a previous pull; overwriting...")
+                        cls.log.warning(
+                            f"Key {k} is already present from a previous pull; overwriting..."
+                        )
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
             except Exception as e:
