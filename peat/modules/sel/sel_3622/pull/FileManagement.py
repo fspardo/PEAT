@@ -70,7 +70,7 @@ class SystemSettings:
     prev_hash: str
     hash: str
     password: str
-    data: bytes
+    data: list[str]
     time: str
     file_name: str
 
@@ -327,7 +327,7 @@ class SystemSettingsPoller:
             self.old_hash,
             hash,
             self.password,
-            response.content,
+            response.content.decode().splitlines(),
             gen_time,
             f"SystemSettings-{gen_time}.bkp",
             self.current_version,
