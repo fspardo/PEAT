@@ -14,14 +14,14 @@ from loguru import logger
 from peat import DeviceData
 
 COLUMNS = {
-    "profile": "ui_ProfileName",
-    "baud_rate": "ui_BaudRate",
-    "data_bits": "ui_DataBit",
-    "parity": "ui_Parity",
-    "stop_bits": "ui_StopBit",
-    "hw_flow_control": "ui_FlowControl",
-    "interface": "ui_Interface",
-    "alias": "ui_SerialPortAlias",
+    "profile": ["ui_ProfileName"],
+    "baud_rate": ["ui_BaudRate"],
+    "data_bits": ["ui_DataBit"],
+    "parity": ["ui_Parity"],
+    "stop_bits": ["ui_StopBit"],
+    "hw_flow_control": ["ui_FlowControl"],
+    "interface": ["ui_Interface"],
+    "alias": ["ui_SerialPortAlias"],
 }
 
 
