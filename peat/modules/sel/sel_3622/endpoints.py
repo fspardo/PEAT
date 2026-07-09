@@ -34,7 +34,7 @@ AVAILABLE_ENDPOINTS = Literal[
     # Serial Ports
     "serial_port_settings",
     "serial_port_profiles",
-    "serial_port_mappings",
+    "port_mappings",
     # Security
     "x509_certificates",
     "ipsec_connections",
@@ -78,7 +78,7 @@ ENDPOINTS: dict[
     # Serial Ports
     "serial_port_settings": "/SerialPortSettings.sel",
     "serial_port_profiles": "/SerialPortProfiles.sel",
-    "serial_port_mappings": "/PortMappings.sel",
+    "port_mappings": "/PortMappings.sel",
     # Security
     "x509_certificates": "/X509.sel",
     "ipsec_connections": "/IPsec.sel",
