@@ -22,18 +22,11 @@ def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, A
 
     | Field                                         | Description                                                         |
     |-----------------------------------------------|---------------------------------------------------------------------|
-    | `serial_port_profiles`                        | Root container                                                      |
-    | `serial_port_profiles.[name]`                 | The name of the serial port profile                                 |
-    | `serial_port_profiles.[name].baud_rate`       | The rate at which data is transmitted                               |
-    | `serial_port_profiles.[name].data_bits`       | Unit of size for data                                               |
-    | `serial_port_profiles.[name].parity`          | Parity algorithm (ECC)                                              |
-    | `serial_port_profiles.[name].hw_flow_control` | Whether to use hardware flow control                                |
-    | `serial_port_profiles.[name].interface`       | The interface to use for communicating                              |
-    | `serial_port_profiles.[name].frame_size`      | The maximum size for a single frame of data                         |
+    | `port_mappings`                               | Root container                                                      |
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("serial_port_profiles")
+    response = session.get_endpoint("port_mappings")
 
     if not response:
         raise Exception("No response")
@@ -47,4 +40,4 @@ def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, A
     logger.debug("Parsing page...")
     result = parse_profiles(soup)
 
-    return {"serial_port_profiles": result}
+    return {"port_mappings": result}
