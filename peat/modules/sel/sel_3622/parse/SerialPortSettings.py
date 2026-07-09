@@ -25,8 +25,8 @@ COLUMNS = {
 }
 
 
-def parse_settings(soup: BeautifulSoup) -> list[dict[str, Any]]:
-    result = []
+def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
+    result = {}
 
     table = soup.find("table", {"id": "serialPorts"})
     assert isinstance(table, Tag)
@@ -49,6 +49,9 @@ def parse_settings(soup: BeautifulSoup) -> list[dict[str, Any]]:
         logger.debug(
             f"/// {entry['alias']} is {entry['state']} (baud={entry['baud_rate']}, db={entry['data_bits']}, p={entry['parity']}, sb={entry['stop_bits']}, hwfc={entry['hw_flow_control']}, if={entry['interface']})"
         )
-        result.append(entry)
+
+        alias = entry["alias"]
+        del entry["alias"]
+        result[alias] = entry
 
     return result
