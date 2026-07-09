@@ -13,7 +13,7 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.SerialPortProfiles import parse_profiles
+from ..parse.PortMappings import parse_mappings
 
 
 def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -37,7 +37,11 @@ def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, A
 
     soup = session.gen_soup(response.text)
 
-    logger.debug("Parsing page...")
-    result = parse_profiles(soup)
+    logger.debug("Inspecting contents...")
+
+    result = parse_mappings(soup)
+
+    table = soup.find("table", {"id": "PortMappingGroups"})
+    assert isinstance(table, Tag)
 
     return {"port_mappings": result}
