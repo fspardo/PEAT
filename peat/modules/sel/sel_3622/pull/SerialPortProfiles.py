@@ -18,7 +18,7 @@ from ..parse.SerialPortProfiles import parse_profiles
 
 def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
-    Pull the configuration under /LDAP.sel
+    Pull the configuration under /SerialPortProfiles.sel
 
     | Field                                         | Description                                                         |
     |-----------------------------------------------|---------------------------------------------------------------------|
