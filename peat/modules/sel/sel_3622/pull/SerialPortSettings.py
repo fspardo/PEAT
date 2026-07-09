@@ -20,18 +20,18 @@ def pull_serial_port_settings(dev: DeviceData, session: HTTP3622) -> dict[str, A
     """
     Pull the configuration under /LDAP.sel
 
-    | Field                             | Description                                                         |
-    |-----------------------------------|---------------------------------------------------------------------|
-    | `serial_ports`                    | Root container                                                      |
-    | `serial_ports[i].state`           | "Enabled" if enabled, "Disabled" if disabled, "Unknown" otherwise   |
-    | `serial_ports[i].profile`         | The profile being used for this port (listed under "Port Profiles") |
-    | `serial_ports[i].baud_rate`       | The baud (data transmission) rate                                   |
-    | `serial_ports[i].data_bits`       | The number of bits of data transmitted per unit                     |
-    | `serial_ports[i].parity`          | The parity algorithm being used for this port                       |
-    | `serial_ports[i].stop_bits`       |                                                                     |
-    | `serial_ports[i].hw_flow_control` | Whether hardware flow control is enabled for this port              |
-    | `serial_ports[i].interface`       | The communications interface being used for this port               |
-    | `serial_ports[i].alias`           | Human-readable name for the interface                               |
+    | Field                                  | Description                                                         |
+    |----------------------------------------|---------------------------------------------------------------------|
+    | `serial_ports`                         | Root container                                                      |
+    | `serial_ports.[alias]`                 | Human-readable name for the interface                               |
+    | `serial_ports.[alias].state`           | "Enabled" if enabled, "Disabled" if disabled, "Unknown" otherwise   |
+    | `serial_ports.[alias].profile`         | The profile being used for this port (listed under "Port Profiles") |
+    | `serial_ports.[alias].baud_rate`       | The baud (data transmission) rate                                   |
+    | `serial_ports.[alias].data_bits`       | The number of bits of data transmitted per unit                     |
+    | `serial_ports.[alias].parity`          | The parity algorithm being used for this port                       |
+    | `serial_ports.[alias].stop_bits`       |                                                                     |
+    | `serial_ports.[alias].hw_flow_control` | Whether hardware flow control is enabled for this port              |
+    | `serial_ports.[alias].interface`       | The communications interface being used for this port               |
     """
 
     logger.debug("Pulling page...")
