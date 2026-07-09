@@ -41,6 +41,7 @@ from .SNMP import pull_snmp_settings
 
 # Serial Ports
 from .SerialPortSettings import pull_serial_port_settings
+from .SerialPortProfiles import pull_serial_port_profiles
 
 # Security
 
