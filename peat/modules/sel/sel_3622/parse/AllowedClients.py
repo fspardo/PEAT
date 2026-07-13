@@ -41,7 +41,7 @@ def parse_clients(soup: BeautifulSoup) -> dict[str, Any]:
         types = row.find("td", {"class": "Types"})
         assert isinstance(types, Tag)
         imgs = types.find_all("img")
-        types = types.get_text(";").split(";")
+        types = types.get_text(";", True).split(";")
 
         result[alias] = {
             "address": address,
