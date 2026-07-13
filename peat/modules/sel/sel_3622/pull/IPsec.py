@@ -1,5 +1,5 @@
 """
-Get data from /X509.sel.
+Get data from /IPsec.sel.
 
 Author: Francisco Santana <fsantan@sandia.gov>
 """
@@ -18,7 +18,7 @@ from ..parse.IPsec import parse_connections
 
 def pull_connections(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
-    Pull the configuration under /PortMappings.sel
+    Pull the configuration under /IPsec.sel
 
     Entries with an asterisk are included with a basic parse. All others must be retrieved from an advanced parse.
 

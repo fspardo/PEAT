@@ -1,5 +1,5 @@
 """
-Parse data from /X509.sel.
+Parse data from /IPsec.sel.
 
 Author: Francisco Santana <fsantan@sandia.gov>
 """
