@@ -133,6 +133,7 @@ class SEL3622(DeviceModule):
             pull_serial_port_profiles,
             pull_port_mappings,
             # Security
+            pull_certificates,
             # Reports
             # File Management is last to allow for enough time to see an update to the configuration
             pull_file_management,
