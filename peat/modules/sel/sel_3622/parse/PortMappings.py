@@ -41,6 +41,8 @@ def parse_mappings(soup: BeautifulSoup) -> dict[str, Any]:
 
         parsed = []
 
+        # TODO: figure out how the odd table at the bottom of the row is populated, then try to populate it to parse it
+
         for map in maps:
             assert isinstance(map, Tag)
             x = {}
