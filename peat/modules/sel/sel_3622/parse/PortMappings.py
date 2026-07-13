@@ -23,7 +23,7 @@ def parse_mappings(soup: BeautifulSoup) -> dict[str, Any]:
 
     rows = table.find_all("tr", {"class": ["odd", "oddProxy", "even", "evenProxy"]})
     # Convert into tuples; this makes parsing simpler.
-    rows = [(rows[i], rows[i + 1]) for i in range(len(rows) // 2)]
+    rows = [(rows[i * 2], rows[i * 2 + 1]) for i in range(len(rows) // 2)]
 
     for name, conf in rows:
         # We need all of these to be tags.
@@ -43,30 +43,22 @@ def parse_mappings(soup: BeautifulSoup) -> dict[str, Any]:
 
         for map in maps:
             assert isinstance(map, Tag)
-
-            # Link information
-            comm_link = map.find("td", {"class": "groupCommLinkActive"})
-            assert isinstance(comm_link, Tag)
-            # Channel information
-            comm_channel = map.find("td", {"class": "commChannelActive"})
-            assert isinstance(comm_channel, Tag)
-
             x = {}
 
             # Device name
-            comm_dev_name = comm_link.find("div", {"class": "groupDeviceLabeActive"})
+            comm_dev_name = map.find("div", {"class": "groupDeviceLabelActive"})
             assert isinstance(comm_dev_name, Tag)
             x["alias"] = comm_dev_name.get_text("", True)
 
             # Check if the image is of a serial device.
-            comm_dev_serial = comm_link.find(
+            comm_dev_serial = map.find(
                 "div", {"class": ["groupSerialPortInactive", "groupSerialPortActive"]}
             )
             # If it is, "Serial". Otherwise, "Ethernet".
             x["device"] = "Serial" if isinstance(comm_dev_serial, Tag) else "Ethernet"
 
             # Device listen address
-            comm_dev_listen = comm_link.find("span")
+            comm_dev_listen = map.find("span")
             if isinstance(comm_dev_listen, Tag):
                 listen = comm_dev_listen.get_text("", True).split(":")
                 if isinstance(listen, list):
@@ -75,23 +67,22 @@ def parse_mappings(soup: BeautifulSoup) -> dict[str, Any]:
                     x["listen"] = listen
 
             # Protocol
-            comm_proto = comm_channel.find("label", {"class": "commStatsProto"})
+            comm_proto = map.find("label", {"class": "commStatsProtocol"})
             assert isinstance(comm_proto, Tag)
             x["proto"] = comm_proto.get_text("", True)
 
             # Statistics (if they exist)
-            comm_stats = comm_channel.find("a", {"class": "diagnosPopUp"})
-            assert isinstance(comm_stats, Tag)
-            lines = comm_stats.get_text(";", True).split(";")
+            comm_stats = map.find("a", {"class": "diagnosPopUp"})
+            if isinstance(comm_stats, Tag):
+                lines = comm_stats.get_text(";", True).split(";")
+                x["stats"] = {}
 
-            x["stats"] = {}
+                for stat in lines:
+                    s = stat.split(":")
+                    # Lowercase, camelcase to match schema of JSON output
+                    s[0] = s[0].lower().replace(" ", "_")
 
-            for stat in lines:
-                s = stat.split(":")
-                # Lowercase, camelcase to match schema of JSON output
-                s[0] = s[0].lower().replace(" ", "_")
-
-                x["stats"][s[0]] = s[1]
+                    x["stats"][s[0]] = s[1]
 
             parsed.append(x)
 
