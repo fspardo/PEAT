@@ -58,7 +58,9 @@ def parse_mappings(soup: BeautifulSoup) -> dict[str, Any]:
             x["device"] = "Serial" if isinstance(comm_dev_serial, Tag) else "Ethernet"
 
             # Device listen address
-            comm_dev_listen = map.find("span")
+            gcla = map.find("td", {"class": "groupCommLinkActive"})
+            assert isinstance(gcla, Tag)
+            comm_dev_listen = gcla.find("span")
             if isinstance(comm_dev_listen, Tag):
                 listen = comm_dev_listen.get_text("", True).split(":")
                 if isinstance(listen, list):
