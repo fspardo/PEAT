@@ -16,7 +16,7 @@ from ..http import HTTP3622
 from ..parse.PortMappings import parse_mappings
 
 
-def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_port_mappings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /PortMappings.sel
 
