@@ -29,7 +29,7 @@ def parse_connections(soup: BeautifulSoup) -> dict[str, Any]:
     result["enabled"] = enabled
     result["ocsp_loss"] = "Drop" if True else "Keep"
 
-    table = soup.find("table", {"id": "x509List"})
+    table = soup.find("table", {"id": "IPsecList"})
     assert isinstance(table, Tag)
 
     rows = table.find_all("tr", {"class": ["odd", "even"]})
