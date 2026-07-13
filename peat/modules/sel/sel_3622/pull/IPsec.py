@@ -20,11 +20,23 @@ def pull_connections(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /IPsec.sel
 
-    Entries with an asterisk are included with a basic parse. All others must be retrieved from an advanced parse.
+    `$` represents an alias, to reduce the size of the table
 
-    | Field                                         | Description                                                         |
-    |-----------------------------------------------|---------------------------------------------------------------------|
-    | `ipsec`                                       | Root container                                                      |
+    | Field                                           | Description                                                                   |
+    |-------------------------------------------------|-------------------------------------------------------------------------------|
+    | `ipsec`                                         | Root container                                                                |
+    | `ipsec.enabled`                                 | Whether IPsec is enabled                                                      |
+    | `ipsec.ocsp_loss`                               | "Drop" if the policy is set to drop on OCSP connection loss, "Keep" otherwise |
+    | `ipsec.connections`                             | List of connections to be made or allowed through an IPsec tunnel             |
+    | `ipsec.connections[i].auth`                     | Authentication method (X.509 or Passphrase)                                   |
+    | `ipsec.connections[i].local`                `$` | Local network configuration                                                   |
+    | `ipsec.connections[i].remote`               `$` | Remote network configuration                                                  |
+    | `ipsec.connections[i].[$].networks`             | List of networks involved in the tunnel.                                      |
+    | `ipsec.connections[i].[$].networks[i].name`     | The name provided to the network                                              |
+    | `ipsec.connections[i].[$].networks[i].subnet`   | The subnet address of the network                                             |
+    | `ipsec.connections[i].[$].gateway`              | Information about the gateway involved in the tunnel                          |
+    | `ipsec.connections[i].[$].gateway.alias`        | The alias provided for the gateway, or the name of the network gateway        |
+    | `ipsec.connections[i].[$].gateway.address`      | The address of the gateway                                                    |
     """
 
     logger.debug("Pulling page...")
