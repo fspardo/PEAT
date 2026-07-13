@@ -47,7 +47,4 @@ def pull_port_mappings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result = parse_mappings(soup)
 
-    table = soup.find("table", {"id": "PortMappingGroups"})
-    assert isinstance(table, Tag)
-
     return {"port_mappings": result}
