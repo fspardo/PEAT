@@ -82,7 +82,7 @@ ENDPOINTS: dict[
     # Security
     "x509_certificates": "/X509.sel",
     "ipsec_connections": "/IPsec.sel",
-    "allowed_clients": "/AllowedClients.ses",
+    "allowed_clients": "/AllowedClients.sel",
     "ssh_host_key": "/SSH_Host_Key.sel",
     "password_management": "/PasswordManagement.sel",
     # Reports
