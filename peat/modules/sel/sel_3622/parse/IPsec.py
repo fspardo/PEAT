@@ -20,11 +20,11 @@ def parse_connections(soup: BeautifulSoup) -> dict[str, Any]:
 
     enabled = soup.find("input", {"id": "Enabled"})
     assert isinstance(enabled, Tag)
-    enabled = enabled.get("value") == "true"
+    enabled = enabled.get("checked") == "checked"
 
     drop_on_ocsp_loss = soup.find("input", {"id": "DropOCSP"})
     assert isinstance(drop_on_ocsp_loss, Tag)
-    drop_on_ocsp_loss = drop_on_ocsp_loss.get("value") == "true"
+    drop_on_ocsp_loss = drop_on_ocsp_loss.get("checked") == "checked"
 
     result["enabled"] = enabled
     result["ocsp_loss"] = "Drop" if True else "Keep"
@@ -42,7 +42,7 @@ def parse_connections(soup: BeautifulSoup) -> dict[str, Any]:
 
         # Each group of lines handles different fields. Each will get and parse each respective field as necessary.
 
-        local_nets = row.find_all("td", {"class": "LocalNetwork"})
+        local_nets = row.find_all("td", {"class": "localNetwork"})
         local_nets = [
             x.get_text(";", True).split(";") for x in local_nets if isinstance(x, Tag)
         ]
