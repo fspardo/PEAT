@@ -35,7 +35,7 @@ ADVANCED_DATA = {
     "org_unit_name": "organization_unit_name",
     "common_name": "common_name",
     "email": "email_addr",
-    "issuer_subject": "issuer_distinguished_name",
+    "issuer_subject": "issuer_dn",
     "issuer_country": "issuer_country",
     "issuer_state": "issuer_state",
     "issuer_locality": "issuer_locality",
@@ -56,7 +56,7 @@ def parse_certificates_advanced(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
 
     for k in ADVANCED_DATA:
-        d = soup.find("label", {"class": ADVANCED_DATA[k]})
+        d = soup.find("label", {"id": ADVANCED_DATA[k]})
         assert isinstance(d, Tag)
         result[k] = d.get_text("", True)
 
@@ -67,7 +67,7 @@ def parse_certificates_basic(soup: BeautifulSoup) -> dict[str, Any]:
     """Performs a basic parse of the table contents in the main page"""
     result = {}
 
-    table = soup.find("table", {"class": "x509List"})
+    table = soup.find("table", {"id": "x509List"})
     assert isinstance(table, Tag)
 
     rows = table.find_all("tr", {"class": ["odd", "even"]})
