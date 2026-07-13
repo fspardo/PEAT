@@ -26,7 +26,7 @@ def pull_clients(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("ipsec_connections")
+    response = session.get_endpoint("allowed_clients")
 
     if not response:
         raise Exception("No response")
