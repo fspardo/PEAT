@@ -41,4 +41,4 @@ def pull_clients(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result = parse_clients(soup)
 
-    return {"ipsec": result}
+    return {"allowed_clients": result}
