@@ -13,7 +13,7 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.X509 import parse_certificates_basic, parse_certificates_advanced
+from ..parse.X509 import parse_certificates_advanced, parse_certificates_basic
 
 
 def pull_certificates(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
