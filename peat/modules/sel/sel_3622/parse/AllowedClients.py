@@ -43,6 +43,10 @@ def parse_clients(soup: BeautifulSoup) -> dict[str, Any]:
         imgs = types.find_all("img")
         types = types.get_text(";").split(";")
 
-        result[alias] = {"address": address, "description": description, "types": types}
+        result[alias] = {
+            "address": address,
+            "description": description,
+            "types": [t.strip("\u00a0") for t in types],
+        }
 
     return result
