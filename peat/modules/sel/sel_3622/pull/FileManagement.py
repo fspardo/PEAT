@@ -380,7 +380,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
 
     # Query periodically up to a maximum number of times.
     # Querying this way ensures we do not retrieve an outdated version of the backup
-    for i in range(0, MAX_QUERIES): # TODO: possibly change this to be a setting
+    for i in range(0, MAX_QUERIES):  # TODO: possibly change this to be a setting
         log.debug(f"Query {i + 1} of {MAX_QUERIES}...")
         from time import sleep
 

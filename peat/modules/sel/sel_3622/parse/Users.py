@@ -4,6 +4,7 @@ Parse the device's users from /Users.sel
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
+from pathlib import Path
 from typing import Any
 
 from bs4 import BeautifulSoup
@@ -11,8 +12,6 @@ from bs4.element import Tag
 
 from peat import DeviceData
 from peat.consts import BS4_PARSER
-
-from pathlib import Path
 
 
 def get_field(form: Tag, id: str) -> str | bool:
@@ -89,9 +88,7 @@ def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
     for field in USER_TABLE_FIELDS:
         id = USER_TABLE_FIELDS[field]
         time = row.find("div", {"class": id})
-        result[field] = (
-            "N/A" if not isinstance(time, Tag) else time.get_text(strip=True)
-        )
+        result[field] = "N/A" if not isinstance(time, Tag) else time.get_text(strip=True)
 
     return {result["username"]: result}
 

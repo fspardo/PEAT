@@ -118,6 +118,7 @@ class SEL3622(DeviceModule):
             # User
             pull_users,
             pull_ldap_settings,
+            pull_radius_settings,
             # Network
             pull_network_settings,
             pull_static_routes,

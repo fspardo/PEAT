@@ -4,17 +4,15 @@ Parse data from /LDAP.sel.
 Author: Francisco Santana <fsantan@sandia.gov>
 """
 
+from pathlib import Path
 from typing import Any
-
-from loguru import logger
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+from loguru import logger
 
 from peat import DeviceData
 from peat.consts import BS4_PARSER
-
-from pathlib import Path
 
 GLOBAL_SETTINGS_NAME = "LDAPSettingsTable"
 GLOBAL_SETTINGS = {
