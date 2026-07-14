@@ -59,13 +59,11 @@ USER_TABLE_FIELDS = {
 }
 
 
-def parse_user_info(dev: DeviceData, pagecontent: str) -> dict[str, Any]:
+def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
     """
     Parse an individual user's data (must be a /Users_Form.sel page)
     """
     result = {}
-
-    soup = BeautifulSoup(pagecontent, features=BS4_PARSER)
 
     form = soup.find("table", {"class": "formLayout"})
     if not isinstance(form, Tag):
@@ -102,8 +100,4 @@ def parse_users(dev: DeviceData, path: Path) -> dict[str, Any]:
     """
     Parse user data
     """
-    result = {}
-
-    # TODO: perform parse
-
-    return result
+    raise NotImplementedError()
