@@ -136,6 +136,7 @@ class SEL3622(DeviceModule):
             pull_certificates,
             pull_connections,
             pull_clients,
+            pull_host_keys,
             # Reports
             # File Management is last to allow for enough time to see an update to the configuration
             pull_file_management,

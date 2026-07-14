@@ -48,5 +48,6 @@ from .PortMappings import pull_port_mappings
 from .X509 import pull_certificates
 from .IPsec import pull_connections
 from .AllowedClients import pull_clients
+from .SSHHostKey import pull_host_keys
 
 # Reports

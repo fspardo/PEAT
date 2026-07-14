@@ -40,13 +40,17 @@ def parse_clients(soup: BeautifulSoup) -> dict[str, Any]:
 
         types = row.find("td", {"class": "Types"})
         assert isinstance(types, Tag)
-        imgs = types.find_all("img")
+        imgs = [i for i in types.find_all("img") if isinstance(i, Tag)]
         types = types.get_text(";", True).split(";")
 
         result[alias] = {
             "address": address,
             "description": description,
-            "types": [t.strip("\u00a0") for t in types],
+            "types": [
+                types[i].strip("\u00a0")
+                for i in range(len(types))
+                if imgs[i].get("src") in ["/images/checked.JPG"]
+            ],
         }
 
     return result

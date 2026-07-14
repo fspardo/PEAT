@@ -20,9 +20,13 @@ def pull_clients(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /AllowedClients.sel
 
-    | Field                                           | Description                                                                   |
-    |-------------------------------------------------|-------------------------------------------------------------------------------|
-    | `ipsec`                                         | Root container                                                                |
+    | Field                                | Description                                                     |
+    |--------------------------------------|-----------------------------------------------------------------|
+    | `allowed_clients`                    | Root container                                                  |
+    | `allowed_clients.[name]`             | Alias provided for the client                                   |
+    | `allowed_clients.[name].address`     | The IP address or subnet of the client(s) authorized to connect |
+    | `allowed_clients.[name].description` | The description provided for this entry                         |
+    | `allowed_clients.[name].types`       | What the client(s) is/are authorized to access                  |
     """
 
     logger.debug("Pulling page...")
