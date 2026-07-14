@@ -45,5 +45,6 @@ from .SerialPortProfiles import pull_serial_port_profiles
 from .PortMappings import pull_port_mappings
 
 # Security
+from .X509 import pull_certificates
 
 # Reports
