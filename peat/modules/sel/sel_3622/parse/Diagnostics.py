@@ -202,6 +202,29 @@ def parse_process_list(lines: list[str]) -> list[dict[str, Any]]:
     return result
 
 
+def parse_free_mem(lines: list[str]) -> dict[str, Any]:
+    mem = [x for x in lines[1].split(" ") if len(x) > 0]
+
+    return {
+        "physical": {
+            "total": int(mem[1]),
+            "used": int(mem[2]),
+            "free": int(mem[3]),
+            "shared": int(mem[4]),
+            "buffers": int(mem[5]),
+        },
+        "buffers": {
+            "used": int(mem[1]),
+            "free": int(mem[2]),
+        },
+        "swap": {
+            "total": int(mem[1]),
+            "used": int(mem[2]),
+            "free": int(mem[3]),
+        },
+    }
+
+
 def first_line_parser(lines: list[str]) -> str:
     if len(lines) == 0:
         return ""
@@ -274,13 +297,13 @@ PARSERS = [
     parse_process_list,  # Process list
     int_parser,  # Available entropy
     noop_parser,  # TODO: does ipsec config need its own parser?
-    noop_parser,  # TODO: find an example for ipsec state
-    noop_parser,  # TODO: find an example for ipsec policy
-    noop_parser,  # TODO: find an example for ipsec status
-    noop_parser,  # TODO: find an example for ipsec total
-    noop_parser,  # TODO: write a parser for free memory
-    noop_parser,  # TODO: find an example for hardware offload events
-    noop_parser,  # TODO: find an example for SELinux audit failures
+    first_line_parser,  # TODO: find an example for ipsec state
+    first_line_parser,  # TODO: find an example for ipsec policy
+    first_line_parser,  # TODO: find an example for ipsec status
+    first_line_parser,  # TODO: find an example for ipsec total
+    parse_free_mem,  # Free memory
+    first_line_parser,  # TODO: find an example for hardware offload events
+    first_line_parser,  # TODO: find an example for SELinux audit failures
     first_line_parser,  # SELinux Enabled
     equals_parser("1"),  # Autoscopy Status
     equals_parser('"1"'),  # Whitelist Enabled
@@ -322,7 +345,6 @@ def parse_diagnostics(soup: BeautifulSoup) -> dict[str, Any]:
 
         logger.debug(f"Parsing {FIELDS[p]} with {PARSERS[p].__name__}")
 
-        logger.debug(pre[begin : cur - 1])
         result[FIELDS[p]] = PARSERS[p](pre[begin : cur - 1])
 
     return result
