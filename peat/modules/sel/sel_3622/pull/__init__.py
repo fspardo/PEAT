@@ -52,3 +52,4 @@ from .SSHHostKey import pull_host_keys
 from .PasswordManagement import pull_passwd_mgmt
 
 # Reports
+from .SysLogReport import pull_syslog_report
