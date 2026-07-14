@@ -53,3 +53,4 @@ from .PasswordManagement import pull_passwd_mgmt
 
 # Reports
 from .SysLogReport import pull_syslog_report
+from .Diagnostics import pull_diagnostics
