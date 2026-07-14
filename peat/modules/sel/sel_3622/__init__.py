@@ -129,6 +129,7 @@ class SEL3622(DeviceModule):
             pull_hosts,
             pull_snmp_settings,
             # Serial Ports
+            pull_serial_port_settings,
             # Security
             # Reports
             # File Management is last to allow for enough time to see an update to the configuration
@@ -141,7 +142,7 @@ class SEL3622(DeviceModule):
         for method in methods:
             tried_methods += 1
             cls.log.info(
-                f'({tried_methods}/{len(methods)}) Attempting method "{method.__name__} for {dev.ip}:{port}"'
+                f'({tried_methods}/{len(methods)}) Attempting method "{method.__name__}" for {dev.ip}:{port}'
             )
 
             try:
