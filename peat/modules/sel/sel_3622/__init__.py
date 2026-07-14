@@ -114,6 +114,7 @@ class SEL3622(DeviceModule):
             pull_file_management,
             pull_physical_sensors,
             # User
+            pull_users,
             # Network
             pull_network_settings,
             pull_static_routes,
