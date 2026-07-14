@@ -44,4 +44,4 @@ def pull_syslog_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
         raise Exception("Redirected")
 
     logger.debug("Parsing page...")
-    return parse_settings(session.gen_soup(response.text))
+    return {"syslog_settings": parse_settings(session.gen_soup(response.text))}

@@ -8,7 +8,7 @@ from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
-from loguru import logger as log
+from loguru import logger
 
 from peat import DeviceData
 

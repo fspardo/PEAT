@@ -9,7 +9,6 @@ from typing import Any, Literal
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from loguru import logger
-from loguru import logger as log
 
 from peat import DeviceData
 
@@ -38,4 +37,4 @@ def pull_local_groups(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
         raise Exception("Redirected")
 
     logger.debug("Parsing page...")
-    return parse_settings(session.gen_soup(response.text))
+    return {"local_groups": parse_settings(session.gen_soup(response.text))}

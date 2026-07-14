@@ -49,9 +49,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     }
 
     return {
-        "syslog_settings": {
-            "oldest_unacknowledged": oum,
-            "threshold_level": sellvl,
-            "destinations": entries,
-        }
+        "oldest_unacknowledged": oum,
+        "threshold_level": sellvl,
+        "destinations": entries,
     }

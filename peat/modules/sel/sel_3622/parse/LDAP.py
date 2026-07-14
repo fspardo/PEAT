@@ -110,7 +110,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         groupmaps[r["role"]].push(r["dn"])
     result["group_mappings"] = groupmaps
 
-    return {"ldap": result}
+    return result
 
 
 def parse_ldap(dev: DeviceData, path: Path) -> dict[str, Any]:

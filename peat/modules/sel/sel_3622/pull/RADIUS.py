@@ -21,11 +21,11 @@ def pull_dictionary(
     dev: DeviceData,
     session: HTTP3622,
     soup: BeautifulSoup,
-) -> bool:
+) -> list[str] | None:
     t = soup.find("input", {"name": "t"})
     if not isinstance(t, Tag):
         logger.error("Could not get token value")
-        return False
+        return None
 
     response = session.post_endpoint(
         "radius_settings",
@@ -37,19 +37,19 @@ def pull_dictionary(
 
     if not response:
         logger.error("No response")
-        return False
+        return None
 
     if response.status_code != 200:
         logger.error("Could not pull file")
-        return False
+        return None
 
     if response.headers["Content-Type"] != "text/plain":
         logger.error("Incorrect content type")
-        return False
+        return None
 
     dev.write_file(response.text, "Dictionary.sel")
     dev.related.files.add("Dictionary.sel")
-    return True
+    return response.text.splitlines()
 
 
 def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -87,8 +87,12 @@ def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     soup = session.gen_soup(response.text)
 
     logger.info("Pulling RADIUS dictionary...")
-    if not pull_dictionary(dev, session, soup):
+    d = pull_dictionary(dev, session, soup)
+    if not d:
         logger.error("Failed to pull dictionary")
 
     logger.debug("Parsing page...")
-    return parse_settings(soup)
+    result = parse_settings(soup)
+    result["dictionary"] = d
+
+    return {"radius": result}

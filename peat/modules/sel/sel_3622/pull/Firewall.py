@@ -85,4 +85,4 @@ def pull_firewall_rules(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     | `firewall.require_encryption`           | Whether packets must go through an established IPsec tunnel                        |
     | `firewall.allow_all_encrypted`          | Do not enforce firewall rules on packets going through an established IPsec tunnel |
     """
-    return parse_rules(session.gen_soup(correct_config_view(session)))
+    return {"firewall": parse_rules(session.gen_soup(correct_config_view(session)))}

@@ -34,4 +34,4 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         assert isinstance(address, Tag)
 
         result[name.get_text(strip=True)] = address.get_text(strip=True)
-    return {"hosts": result}
+    return result

@@ -32,4 +32,4 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
 
         result[group] = [member.get_text(strip=True) for member in members]
 
-    return {"local_groups": result}
+    return result
