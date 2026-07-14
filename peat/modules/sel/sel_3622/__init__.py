@@ -70,6 +70,7 @@ class SEL3622(DeviceModule):
             return None
         else:
             dev._cache["web_session"] = session
+            dev._cache["global_token"] = session.get_global_token_value()
             return session
 
     @classmethod
@@ -124,6 +125,7 @@ class SEL3622(DeviceModule):
             pull_network_settings,
             pull_static_routes,
             pull_syslog_settings,
+            pull_firewall_rules,
             # Serial Ports
             # Security
             # Reports

@@ -109,6 +109,17 @@ class HTTP3622(SELHTTP):
 
         return True
 
+    def get_global_token_value(self) -> str:
+        response = self.get_endpoint("device_reset")
+        if not response or not response.status_code == 200 or len(response.history) > 0:
+            raise Exception("Could not get token")
+
+        soup = self.gen_soup(response.text)
+        t = soup.find("input", {"type": "hidden", "name": "t"})
+        assert isinstance(t, Tag)
+
+        return t.get_text(strip=True)
+
     def get_fid(self) -> str | None:
         """
         Get the FID of the device. Typically, this contains the device model.

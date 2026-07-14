@@ -29,7 +29,7 @@ def pull_local_groups(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     logger.debug("Pulling page...")
     response = session.get_endpoint("local_groups")
-    
+
     if not response:
         raise Exception("No response")
     if response.status_code != 200:
