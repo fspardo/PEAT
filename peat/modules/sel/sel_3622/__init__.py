@@ -139,6 +139,7 @@ class SEL3622(DeviceModule):
             pull_host_keys,
             pull_passwd_mgmt,
             # Reports
+            pull_syslog_report,
             # File Management is last to allow for enough time to see an update to the configuration
             pull_file_management,
         ]
