@@ -43,9 +43,7 @@ def parse_connections(soup: BeautifulSoup) -> dict[str, Any]:
         # Each group of lines handles different fields. Each will get and parse each respective field as necessary.
 
         local_nets = row.find_all("td", {"class": "localNetwork"})
-        local_nets = [
-            x.get_text(";", True).split(";") for x in local_nets if isinstance(x, Tag)
-        ]
+        local_nets = [x.get_text(";", True).split(";") for x in local_nets if isinstance(x, Tag)]
         local_nets = [{"name": x[0], "subnet": x[1]} for x in local_nets]
 
         local_gw = row.find("td", {"class": "LGAlias"})
@@ -61,9 +59,7 @@ def parse_connections(soup: BeautifulSoup) -> dict[str, Any]:
         cxfwd = cxfwd.get_text("", True)
 
         remote_nets = row.find_all("td", {"class": "remoteNetwork"})
-        remote_nets = [
-            x.get_text(";", True).split(";") for x in remote_nets if isinstance(x, Tag)
-        ]
+        remote_nets = [x.get_text(";", True).split(";") for x in remote_nets if isinstance(x, Tag)]
         remote_nets = [{"name": x[0], "subnet": x[1]} for x in remote_nets]
 
         remote_gw = row.find("td", {"class": "RGAlias"})
