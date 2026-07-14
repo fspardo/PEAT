@@ -126,6 +126,7 @@ class SEL3622(DeviceModule):
             pull_static_routes,
             pull_syslog_settings,
             pull_firewall_rules,
+            pull_hosts,
             # Serial Ports
             # Security
             # Reports
