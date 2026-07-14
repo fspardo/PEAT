@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from peat import DeviceData
-from peat.consts import BS4_PARSER
 
 
 def get_field(form: Tag, id: str) -> str | bool:

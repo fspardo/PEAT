@@ -12,7 +12,6 @@ from bs4.element import Tag
 from loguru import logger
 
 from peat import DeviceData
-from peat.consts import BS4_PARSER
 
 GLOBAL_SETTINGS_NAME = "LDAPSettingsTable"
 GLOBAL_SETTINGS = {
