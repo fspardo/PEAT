@@ -148,7 +148,9 @@ def pull_info(http: HTTP3622) -> dict[str, str] | None:
     conn_dir_hash = soup.find("span", {"id": "display_connectionDirectoryHash"})
 
     if not isinstance(conn_dir_hash, Tag):
-        http.log.error("Could not get the last uploaded connection directory configuration hash")
+        http.log.error(
+            "Could not get the last uploaded connection directory configuration hash"
+        )
         return None
 
     cdh = conn_dir_hash.get_text(strip=True)
@@ -243,7 +245,9 @@ class SystemSettingsPoller:
         response = self.http.post_endpoint(
             "file_management",
             files=form_generate(password, self.token),
-            headers={"Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
+            headers={
+                "Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
+            },
         )
 
         if not response:
@@ -300,7 +304,9 @@ class SystemSettingsPoller:
         response = self.http.post_endpoint(
             "file_management",
             files=form_export(self.token),
-            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
+            headers={
+                "Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
+            },
         )
 
         if not response:
