@@ -46,5 +46,6 @@ from .PortMappings import pull_port_mappings
 
 # Security
 from .X509 import pull_certificates
+from .IPsec import pull_connections
 
 # Reports

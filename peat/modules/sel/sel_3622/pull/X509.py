@@ -18,7 +18,7 @@ from ..parse.X509 import parse_certificates_advanced, parse_certificates_basic
 
 def pull_certificates(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
-    Pull the configuration under /PortMappings.sel
+    Pull the configuration under /X509.sel
 
     Entries with an asterisk are included with a basic parse. All others must be retrieved from an advanced parse.
 
