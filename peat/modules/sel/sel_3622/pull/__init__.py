@@ -34,6 +34,7 @@ from .LocalGroups import pull_local_groups
 # Network
 from .NetworkSettings import pull_network_settings
 from .StaticRoutes import pull_static_routes
+from .Syslog import pull_syslog_settings
 
 # Serial Ports
 
