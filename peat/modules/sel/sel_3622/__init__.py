@@ -109,18 +109,24 @@ class SEL3622(DeviceModule):
         # TODO: pull
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
+            # Prepare for pull later
+            initialize_file_management_pull,
             # System
             pull_usage_policy,
-            pull_file_management,
+            # pull_file_management [moved to the end]
             pull_physical_sensors,
             # User
             pull_users,
+            pull_ldap_settings,
+            pull_radius_settings,
             # Network
             pull_network_settings,
             pull_static_routes,
             # Serial Ports
             # Security
             # Reports
+            # File Management is last to allow for enough time to see an update to the configuration
+            pull_file_management,
         ]
         pulled_config = {}
 

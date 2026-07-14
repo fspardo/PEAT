@@ -32,6 +32,9 @@ FORM_CONTENT: Final[dict[str, Any]] = {
     "submit": (None, ""),
 }
 
+# How many times to query the page before forcing a pull
+MAX_QUERIES: int = 3
+
 
 def form_generate(password: str, token: str):
     """
@@ -334,6 +337,19 @@ class SystemSettingsPoller:
         )
 
 
+def initialize_file_management_pull(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
+    """
+    Prepares the FileManagement pull. Returns an empty dictionary.
+    """
+    ssp = SystemSettingsPoller(http)
+    if not ssp.queue():  # Attempt to queue the creation of the configuration file
+        raise Exception("Failed to queue system file generation")
+
+    dev._cache[SystemSettingsPoller] = ssp
+
+    return {}
+
+
 def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     """
     Pull data from the "/FileManagement.sel" endpoint.
@@ -354,14 +370,12 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
     | `connection_directory_config_hash`          | The hash of the last uploaded Connection Directory configuration file. |
     """
 
-    ssp = SystemSettingsPoller(http)
-    if not ssp.queue():  # Attempt to queue the creation of the configuration file
-        raise Exception("Failed to queue system file generation")
+    ssp = dev._cache[SystemSettingsPoller]
 
-    # Query once every 30 seconds, for a total of 300s (5m).
+    # Query periodically up to a maximum number of times.
     # Querying this way ensures we do not retrieve an outdated version of the backup
-    for i in range(0, 10):
-        log.debug(f"Query {i + 1} of 10...")
+    for i in range(0, MAX_QUERIES):  # TODO: possibly change this to be a setting
+        log.debug(f"Query {i + 1} of {MAX_QUERIES}...")
         from time import sleep
 
         sleep(10)
@@ -373,7 +387,7 @@ def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
         if not sys_settings:
             raise Exception("Error in querying system settings")
 
-    # Odds are, if it has failed after about two minutes of attempts, then there were
+    # Odds are, if it has failed after multiple attempts, then there were
     # no changes to the backup file.
     if not isinstance(sys_settings, SystemSettings):
         log.info("Pulling system configuration backup...")
