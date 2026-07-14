@@ -14,9 +14,7 @@ from peat import DeviceData
 from ..http import HTTP3622
 
 
-def get_input_value(
-    s: BeautifulSoup, type: Literal["checkbox", "text"], id: str
-) -> str:
+def get_input_value(s: BeautifulSoup, type: Literal["checkbox", "text"], id: str) -> str:
     """
     Get the value of an input field based on its type and ID.
     """

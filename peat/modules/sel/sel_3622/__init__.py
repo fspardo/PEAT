@@ -12,7 +12,7 @@ Authors:
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-from .pull import pull_usage_policy, pull_file_management, pull_physical_sensors
+from .pull import *
 
 
 class SEL3622(DeviceModule):
@@ -109,9 +109,16 @@ class SEL3622(DeviceModule):
         # TODO: pull
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
+            # System
             pull_usage_policy,
             pull_file_management,
             pull_physical_sensors,
+            # User
+            # Network
+            pull_static_routes,
+            # Serial Ports
+            # Security
+            # Reports
         ]
         pulled_config = {}
 
