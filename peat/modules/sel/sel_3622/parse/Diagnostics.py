@@ -74,7 +74,6 @@ def parse_firewall_state(lines: list[str]) -> dict[str, Any]:
     last = 0
 
     # Split by chain
-    logger.debug("Splitting chains...")
     while cur < len(lines):
         while cur < len(lines) and len(lines[cur]) > 4 and lines[cur][:5] != "Chain":
             cur += 1
@@ -86,7 +85,6 @@ def parse_firewall_state(lines: list[str]) -> dict[str, Any]:
     chains.append(lines[last:cur])
 
     for chain in chains:
-        logger.debug(f"Parsing chain {chain}")
         if len(chain) <= 1:
             continue
 
