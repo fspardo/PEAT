@@ -20,13 +20,28 @@ def pull_syslog_report(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     """
     Pull the configuration under /SysLogReport.sel
 
+    Logs are sorted by ID, in ascending order
+
     | Field                                             | Description                                                           |
     |---------------------------------------------------|-----------------------------------------------------------------------|
     | `syslog_report`                                   | Root container                                                        |
+    | `syslog_report.by_severity`                       | Count of logs by severity                                             |
+    | `syslog_report.by_facility`                       | Count of logs by facility                                             |
+    | `syslog_report.by_tag`                            | Count of logs by tag                                                  |
+    | `syslog_report.total_logs`                        | Count of logs                                                         |
+    | `syslog_report.acknowledged`                      | Count of acknowledged logs                                            |
+    | `syslog_report.logs`                              | List of logs                                                          |
+    | `syslog_report.logs[i].id`                        | Log ID                                                                |
+    | `syslog_report.logs[i].acked`                     | Whether the log was acknowledged                                      |
+    | `syslog_report.logs[i].severity`                  | The severity level of the log                                         |
+    | `syslog_report.logs[i].facility`                  | The facility from which the log was generated                         |
+    | `syslog_report.logs[i].tag`                       | The tag assigned to the log                                           |
+    | `syslog_report.logs[i].time`                      | When this log was generated                                           |
+    | `syslog_report.logs[i].message`                   | Log message                                                           |
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("syslog")
+    response = session.get_endpoint("system_logs")
 
     if not response:
         raise Exception("No response")
@@ -36,14 +51,14 @@ def pull_syslog_report(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
         raise Exception("Redirected")
 
     soup = session.gen_soup(response.text)
-    t = soup.find("input", {"name": "t"})
+    t = soup.find("input", {"type": "hidden", "name": "t"})
 
     if not isinstance(t, Tag):
         raise Exception("Failed to find token")
 
     t = t.get("value")
 
-    response = session.get(f"SysLogreport.sel?submit=download&t={t}")
+    response = session.get(f"SysLogReport.sel?submit=download&t={t}")
 
     if not response:
         raise Exception("No response")
@@ -59,36 +74,4 @@ def pull_syslog_report(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     logger.debug("Parsing page...")
 
-    logs = parse_logs(csv)
-
-    severities = {}
-    facilities = {}
-    tags = {}
-
-    for log in logs:
-        sev = log["severity"]
-        fac = log["facility"]
-        tag = log["tag"]
-
-        if sev not in severities:
-            severities[sev] = 1
-        else:
-            severities[sev] += 1
-        if fac not in facilities:
-            facilities[fac] = 1
-        else:
-            facilities[fac] += 1
-        if tag not in tags:
-            tags[tag] = 1
-        else:
-            tags[tag] += 1
-
-    return {
-        "syslog_report": {
-            "by_severity": severities,
-            "by_facility": facilities,
-            "by_tag": tags,
-            "total_logs": len(logs),
-            "logs": logs,
-        }
-    }
+    return {"syslog_report": parse_logs(csv)}

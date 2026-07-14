@@ -14,8 +14,8 @@ from loguru import logger
 from peat import DeviceData
 
 
-def parse_logs(csv: list[str]) -> list[dict[str, Any]]:
-    result = []
+def parse_logs(csv: list[str]) -> dict[str, Any]:
+    logs = []
 
     headers = [s.lower() for s in csv[0].split(",")]
 
@@ -26,9 +26,9 @@ def parse_logs(csv: list[str]) -> list[dict[str, Any]]:
             i += 1
             line += " " + csv[i].strip()
 
-        line.split(",")
+        line = line.split(",")
 
-        result.append(
+        logs.append(
             {
                 headers[0]: int(line[0]),
                 headers[1]: line[1] != "f",
@@ -36,12 +36,45 @@ def parse_logs(csv: list[str]) -> list[dict[str, Any]]:
                 headers[3]: line[3],
                 headers[4]: line[4],
                 headers[5]: line[5],
-                headers[6]: ",".join(line[6:]),
+                headers[6]: ",".join(line[6:]).strip("'"),
             }
         )
 
         i += 1
 
-    result.sort(key=lambda x: x["id"])
+    logs.sort(key=lambda x: x["id"])
 
-    return result
+    severities = {}
+    facilities = {}
+    tags = {}
+    acked = 0
+
+    for log in logs:
+        sev = log["severity"]
+        fac = log["facility"]
+        tag = log["tag"]
+
+        if log["acked"]:
+            acked += 1
+
+        if sev not in severities:
+            severities[sev] = 1
+        else:
+            severities[sev] += 1
+        if fac not in facilities:
+            facilities[fac] = 1
+        else:
+            facilities[fac] += 1
+        if tag not in tags:
+            tags[tag] = 1
+        else:
+            tags[tag] += 1
+
+    return {
+        "by_severity": severities,
+        "by_facility": facilities,
+        "by_tag": tags,
+        "total_logs": len(logs),
+        "acknowledged": acked,
+        "logs": logs,
+    }
