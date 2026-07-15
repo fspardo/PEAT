@@ -20,7 +20,7 @@ def pull_dictionary(
     dev: DeviceData,
     session: HTTP3622,
     soup: BeautifulSoup,
-) -> list[str] | None:
+) -> str | None:
     t = soup.find("input", {"name": "t"})
     if not isinstance(t, Tag):
         logger.error("Could not get token value")
@@ -48,7 +48,7 @@ def pull_dictionary(
 
     dev.write_file(response.text, "Dictionary.sel")
     dev.related.files.add("Dictionary.sel")
-    return response.text.splitlines()
+    return response.text
 
 
 def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:

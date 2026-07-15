@@ -233,13 +233,21 @@ def noop_parser(lines: list[str]) -> list[str]:
     return lines
 
 
+def joiner_parser(joiner: str) -> FunctionType:
+    fn = lambda x: joiner.join(x)
+    fn.__name__ = "Joiner"
+    return fn
+
+
 def int_parser(lines: list[str]) -> int:
     if len(lines) == 0:
         return 0
     return int(lines[0].strip())
 
 
-def equals_parser(expected: str, if_equals: Any = True, otherwise: Any = False) -> FunctionType:
+def equals_parser(
+    expected: str, if_equals: Any = True, otherwise: Any = False
+) -> FunctionType:
     fn = lambda x: if_equals if len(x) > 0 and x[0] == expected else otherwise
     fn.__name__ = f"equals_parser({expected})"
     return fn
@@ -292,7 +300,7 @@ PARSERS = [
     parse_hard_drive_usage,  # Hard drive usage
     parse_process_list,  # Process list
     int_parser,  # Available entropy
-    noop_parser,  # TODO: does ipsec config need its own parser?
+    joiner_parser("\n"),  # TODO: does ipsec config need its own parser?
     first_line_parser,  # TODO: find an example for ipsec state
     first_line_parser,  # TODO: find an example for ipsec policy
     first_line_parser,  # TODO: find an example for ipsec status

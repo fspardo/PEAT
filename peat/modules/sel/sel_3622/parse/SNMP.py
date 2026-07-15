@@ -32,7 +32,7 @@ def parse_mibs(dev: DeviceData, path: str | Path) -> dict[str, Any]:
 
         result[str(file.name)] = {
             "sha256sum": hash,
-            "content": file.read_text().splitlines(),
+            "content": file.read_text(),
         }
 
     return {"mibs": result}
