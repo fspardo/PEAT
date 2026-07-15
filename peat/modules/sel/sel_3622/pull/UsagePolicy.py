@@ -5,12 +5,10 @@ Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from typing import Any
-
 from bs4.element import Tag
-
 from peat import DeviceData
-
 from ..http import HTTP3622
+from ..parse.UsagePolicy import parse_usage_policy
 
 
 def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -33,8 +31,4 @@ def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     soup = session.gen_soup(response.text)
 
-    textarea = soup.find("textarea", {"id": "UseBanner"})
-    if not isinstance(textarea, Tag):
-        raise Exception("Could not find text area")
-
-    return {"usage_policy": textarea.get_text(strip=True)}
+    return {"usage_policy": parse_usage_policy(soup)}
