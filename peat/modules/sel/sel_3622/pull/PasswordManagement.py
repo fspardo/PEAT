@@ -46,4 +46,4 @@ def pull_passwd_mgmt(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result = parse_passwd_mgmt(soup)
 
-    return {"host_keys": result}
+    return {"password_mgmt": result}
