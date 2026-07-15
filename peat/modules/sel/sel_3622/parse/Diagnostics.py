@@ -30,16 +30,17 @@ def parse_chain(chain: list[str]) -> dict[str, Any]:
     line = chain[0].split(" ")
     result = {}
     result["name"] = line[1]
+    paren = chain[0].split("(")[1].split(" ")
 
-    resume = 2
-    if len(chain) > 2 and chain[2] == "policy":
-        result["policy"] = line[3]
-        resume = 4
+    if paren[0] == "policy":
+        if len(paren) > 2:
+            result["policy"] = paren[1]
+            paren = paren[2:]
+        else:
+            paren = []
 
-    result["rules"] = []
-
-    rem = " ".join(line[resume:])[:-1].split(",")
-    ext = {x[1]: x[0] for x in [y.split(" ") for y in rem]}
+    paren = " ".join(paren).strip("()").split(", ")
+    ext = {x[1].strip(): x[0].strip() for x in [y.split(" ") for y in paren]}
     result.update(ext)
 
     tbl_header = [x for x in chain[1].split(" ") if len(x) > 0]
