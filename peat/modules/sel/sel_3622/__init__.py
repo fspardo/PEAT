@@ -168,8 +168,8 @@ class SEL3622(DeviceModule):
 
         try:
             pull_index(dev, session, pulled_config)
-        except:
-            cls.log.warning("Failed to pull data from dashboard")
+        except Exception as e:
+            cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
         dev.write_file(pulled_config, "web_cfg.json")
         dev.related.files.add("web_cfg.json")
