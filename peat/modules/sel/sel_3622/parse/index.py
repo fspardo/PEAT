@@ -67,8 +67,9 @@ def parse_network_stats(table: Tag, data: dict[str, Any]):
 
     # Do not do this if network settings failed to parse
     if "network" in data:
+        logger.info("Parsing Ethernet Stats")
         nic_rows = nics.find_all("tr")
-        for row in nic_rows:
+        for row in nic_rows[1:]:
             assert isinstance(row, Tag)
 
             row_text = row.get_text(";", True).split(";")
@@ -83,17 +84,18 @@ def parse_network_stats(table: Tag, data: dict[str, Any]):
                 }
 
     if "ipsec" in data:
+        logger.info("Parsing IPsec Stats")
         data["ipsec"]["stats"] = {}
         icsx_rows = iscx.find_all("tr")
 
-        for row in icsx_rows:
+        for row in icsx_rows[1:]:
             assert isinstance(row, Tag)
 
             text = row.get_text("\n", True).splitlines()
             name = text[0]
             state = text[1]
-            bin = int(name[2].split(" ")[0])
-            bout = int(name[3].split(" ")[0])
+            bin = int(text[2].split(" ")[0])
+            bout = int(text[3].split(" ")[0])
 
             data["ipsec"]["stats"][name] = {
                 "state": state,
