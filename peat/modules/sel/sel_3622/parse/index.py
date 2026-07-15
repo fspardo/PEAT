@@ -143,4 +143,6 @@ def parse_index(soup: BeautifulSoup, data: dict[str, Any]):
         if caption not in PARSERS:
             continue
 
+        logger.info(f"Parsing table {caption}")
+
         PARSERS[caption](table, data)
