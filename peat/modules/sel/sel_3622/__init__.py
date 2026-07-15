@@ -166,6 +166,11 @@ class SEL3622(DeviceModule):
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
 
+        try:
+            pull_index(dev, session, pulled_config)
+        except:
+            cls.log.warning("Failed to pull data from dashboard")
+
         dev.write_file(pulled_config, "web_cfg.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)

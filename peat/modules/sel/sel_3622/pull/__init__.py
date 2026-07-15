@@ -20,6 +20,8 @@ Authors:
 
 # Sorting has been disabled to make imports match the ordering of the UI on the SEL
 
+from .index import pull_index
+
 # System
 from .UsagePolicy import pull_usage_policy
 from .FileManagement import pull_file_management, initialize_file_management_pull
