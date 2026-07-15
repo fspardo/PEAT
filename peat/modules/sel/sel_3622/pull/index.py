@@ -24,7 +24,7 @@ def pull_index(dev: DeviceData, session: HTTP3622, data: dict[str, Any]):
     This is to be run last.
     """
     logger.debug("Pulling page...")
-    response = session.get_endpoint("ipsec_connections")
+    response = session.get_endpoint("dashboard")
 
     if not response:
         raise Exception("No response")
