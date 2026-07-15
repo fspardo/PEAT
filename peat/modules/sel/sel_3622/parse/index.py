@@ -78,10 +78,12 @@ def parse_network_stats(table: Tag, data: dict[str, Any]):
             bout = int(row_text[3].split(" ")[0])
 
             if name in data["network"]["interfaces"]:
-                data["network"]["interfaces"][name] = {
-                    "bytes_in": bin,
-                    "bytes_out": bout,
-                }
+                data["network"]["interfaces"][name].update(
+                    {
+                        "bytes_in": bin,
+                        "bytes_out": bout,
+                    }
+                )
 
     if "ipsec" in data:
         logger.info("Parsing IPsec Stats")
