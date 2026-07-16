@@ -27,7 +27,7 @@ class SEL3622(DeviceModule):
     vendor_name = "Schweitzer Engineering Laboratories"
     brand = "SEL"
     module_aliases = ["sel-3622", "3622", "sel-3620-slim", "3620-slim"]
-    default_options = {"web": {"user": "admin", "pass": "IAmAdmin!1", "users": []}}
+    default_options = {"web": {"user": "admin", "pass": "Admin123!", "users": []}}
 
     @classmethod
     def get_session(cls, dev: DeviceData) -> HTTP3622 | None:
