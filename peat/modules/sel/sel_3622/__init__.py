@@ -12,7 +12,9 @@ Authors:
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
+from time import sleep
 from .pull import *
+from .method import Method
 
 
 class SEL3622(DeviceModule):
@@ -86,7 +88,7 @@ class SEL3622(DeviceModule):
             return False
 
         if session.validate_fid():
-            cls.log.info("Success! This device is an SEL-3622!")
+            cls.log.info("Success! This device is a supported SEL security gateway!")
         else:
             cls.log.error("Failure!")
             return False
@@ -108,67 +110,78 @@ class SEL3622(DeviceModule):
             return False
 
         # TODO: pull
-        dev._cache["FID"] = session.get_fid()
+        fid = session.get_fid()
+        assert fid
+        fid = fid.split("-")
+        device = f"{fid[0]}-{fid[1]}"
+        version = int(fid[2][1:])
+
+        dev._cache["DEVICE"] = device
+        dev._cache["VERSION"] = version
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
-            initialize_file_management_pull,
+            Method(initialize_file_management_pull, 1),
             # System
-            pull_usage_policy,
+            Method(pull_usage_policy, 3),
+            Method(pull_web_server_config, 3),
             # pull_file_management [moved to the end]
-            pull_physical_sensors,
+            Method(pull_physical_sensors, 3),
             # User
-            pull_users,
-            pull_ldap_settings,
-            pull_radius_settings,
-            pull_local_groups,
+            Method(pull_users, 3),
+            Method(pull_ldap_settings, 3),
+            Method(pull_radius_settings, 3),
+            Method(pull_local_groups, 3),
             # Network
-            pull_network_settings,
-            pull_static_routes,
-            pull_syslog_settings,
-            pull_firewall_rules,
-            pull_hosts,
-            pull_snmp_settings,
+            Method(pull_network_settings, 3),
+            Method(pull_static_routes, 3),
+            Method(pull_syslog_settings, 3),
+            Method(pull_firewall_rules, 3),
+            Method(pull_hosts, 3),
+            Method(pull_snmp_settings, 3),
             # Serial Ports
-            pull_serial_port_settings,
-            pull_serial_port_profiles,
-            pull_port_mappings,
+            Method(pull_serial_port_settings, 3),
+            Method(pull_serial_port_profiles, 3),
+            Method(pull_port_mappings, 3),
             # Security
-            pull_certificates,
-            pull_connections,
-            pull_clients,
-            pull_host_keys,
-            pull_passwd_mgmt,
+            Method(pull_certificates, 3),
+            Method(pull_connections, 3),
+            Method(pull_clients, 3),
+            Method(pull_host_keys, 3),
+            Method(pull_passwd_mgmt, 3),
             # Reports
-            pull_syslog_report,
-            pull_diagnostics,
+            Method(pull_syslog_report, 3),
+            Method(pull_diagnostics, 3),
             # File Management is last to allow for enough time to see an update to the configuration
-            pull_file_management,
+            Method(pull_file_management, 1),
         ]
         pulled_config = {}
-        attempts = {}
+        used_methods = {}
 
         tried_methods = 0
 
         for method in methods:
+
             tried_methods += 1
             cls.log.info(
-                f'({tried_methods}/{len(methods)}) Attempting method "{method.__name__}" for {dev.ip}:{port}'
+                f'({tried_methods}/{len(methods)}) Attempting method "{method.handler.__name__}" for {dev.ip}:{port}'
             )
 
             try:
-                result = method(dev, session)
+                result = method.handle(dev, session)
                 for k in result:
                     if k in pulled_config:
                         cls.log.warning(
                             f"Key {k} is already present from a previous pull; overwriting..."
                         )
-                attempts[method.__name__] = "🟢"
+                used_methods[method.handler.__name__] = "OK"
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
+                sleep(1)
+                break
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
-                attempts[method.__name__] = "🔴"
+                used_methods[method.handler.__name__] = "NOT OK"
 
         try:
             pull_index(dev, session, pulled_config)
@@ -176,7 +189,7 @@ class SEL3622(DeviceModule):
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
         dev.write_file(pulled_config, "web_cfg.json")
-        dev.write_file(attempts, "attempted_methods.json")
+        dev.write_file(used_methods, "attempted_methods.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)
 
