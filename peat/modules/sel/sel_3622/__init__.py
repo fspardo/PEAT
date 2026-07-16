@@ -108,6 +108,7 @@ class SEL3622(DeviceModule):
             return False
 
         # TODO: pull
+        dev._cache["FID"] = session.get_fid()
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
