@@ -7,6 +7,7 @@ Authors:
 
 from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from ..sel_http import SELHTTP, Response
@@ -57,6 +58,10 @@ class HTTP3622(SELHTTP):
             result.ok and not (result.is_redirect or result.is_permanent_redirect)
         )
 
+    def needs_selssid(self, soup: BeautifulSoup) -> bool:
+        """Checks if the SELSSID token is required to log in"""
+        return isinstance(soup.find("input", {"name": "SELSESSID", "type": "hidden"}), Tag)
+
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
@@ -74,16 +79,20 @@ class HTTP3622(SELHTTP):
 
         # Voodoo magicks be here
         # Gets a session cookie
-        if not self.get(ENDPOINTS["login"], "https"):
+        resp = self.get(ENDPOINTS["login"], "https")
+        if not resp:
             self.log.error("Could not get login page")
             return False
 
-        selssid = self.session.cookies["SELSESSID"]
-        if not selssid:
+        ssid = self.session.cookies["SELSESSID"]
+        if not ssid:
             self.log.error("Did not get a session ID")
             return False
 
-        self.session_id = selssid
+        self.session_id = ssid
+
+        if self.needs_selssid(self.gen_soup(resp.text)):
+            login_data["SELSESSID"] = ssid
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
