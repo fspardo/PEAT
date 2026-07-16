@@ -145,6 +145,7 @@ class SEL3622(DeviceModule):
             pull_file_management,
         ]
         pulled_config = {}
+        attempts = {}
 
         tried_methods = 0
 
@@ -161,10 +162,12 @@ class SEL3622(DeviceModule):
                         cls.log.warning(
                             f"Key {k} is already present from a previous pull; overwriting..."
                         )
+                attempts[method.__name__] = "🟢"
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
+                attempts[method.__name__] = "🔴"
 
         try:
             pull_index(dev, session, pulled_config)
