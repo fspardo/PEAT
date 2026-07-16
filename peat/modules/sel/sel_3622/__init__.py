@@ -176,6 +176,7 @@ class SEL3622(DeviceModule):
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
         dev.write_file(pulled_config, "web_cfg.json")
+        dev.write_file(attempts, "attempted_methods.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)
 
