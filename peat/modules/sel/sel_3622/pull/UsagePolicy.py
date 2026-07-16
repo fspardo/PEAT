@@ -28,7 +28,7 @@ def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if not response:
         raise Exception("No response")
     if len(response.history) > 0:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
     if response.status_code != 200:
         raise Exception("Non-200 status code")
 

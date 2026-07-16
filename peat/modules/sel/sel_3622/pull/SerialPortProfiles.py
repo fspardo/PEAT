@@ -40,7 +40,7 @@ def pull_serial_port_profiles(dev: DeviceData, session: HTTP3622) -> dict[str, A
     if response.status_code != 200:
         raise Exception(f"Got non-200 status: {response.status_code}")
     if response.history:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     soup = session.gen_soup(response.text)
 

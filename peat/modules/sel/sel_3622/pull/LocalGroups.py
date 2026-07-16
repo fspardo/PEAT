@@ -34,7 +34,7 @@ def pull_local_groups(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.status_code != 200:
         raise Exception(f"Got non-200 status: {response.status_code}")
     if response.history:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     logger.debug("Parsing page...")
     return {"local_groups": parse_settings(session.gen_soup(response.text))}

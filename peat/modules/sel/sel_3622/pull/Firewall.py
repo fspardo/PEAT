@@ -23,7 +23,7 @@ def correct_config_view(session: HTTP3622) -> str:
     elif response.status_code != 200:
         raise Exception("Non-200 status code")
     elif len(response.history) > 0:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     soup = session.gen_soup(response.text)
 
