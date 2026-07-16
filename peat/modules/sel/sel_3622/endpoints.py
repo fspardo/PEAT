@@ -17,6 +17,7 @@ AVAILABLE_ENDPOINTS = Literal[
     "usage_policy",
     "file_management",
     "web_server",
+    "management_interface",
     "device_reset",
     "physical_sensors",
     # User
@@ -61,6 +62,7 @@ ENDPOINTS: dict[
     "usage_policy": "/UsagePolicy.sel",
     "file_management": "/FileManagement.sel",
     "web_server": "/WebServer.sel",
+    "management_interface": "/ManagementInterface.sel",
     "device_reset": "/DeviceReset.sel",
     "physical_sensors": "/PhysicalSensors.sel",
     # User
