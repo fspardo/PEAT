@@ -246,9 +246,7 @@ def int_parser(lines: list[str]) -> int:
     return int(lines[0].strip())
 
 
-def equals_parser(
-    expected: str, if_equals: Any = True, otherwise: Any = False
-) -> FunctionType:
+def equals_parser(expected: str, if_equals: Any = True, otherwise: Any = False) -> FunctionType:
     fn = lambda x: if_equals if len(x) > 0 and x[0] == expected else otherwise
     fn.__name__ = f"equals_parser({expected})"
     return fn

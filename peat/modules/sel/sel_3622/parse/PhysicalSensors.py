@@ -11,6 +11,7 @@ from bs4.element import Tag
 
 from peat import DeviceData
 
+
 def get_input_value(s: BeautifulSoup, type: Literal["checkbox", "text"], id: str) -> str:
     """
     Get the value of an input field based on its type and ID.

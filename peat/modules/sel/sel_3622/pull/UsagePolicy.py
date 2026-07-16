@@ -5,8 +5,11 @@ Author: Francisco Santana <fsantan@sandia.gov>
 """
 
 from typing import Any
+
 from bs4.element import Tag
+
 from peat import DeviceData
+
 from ..http import HTTP3622
 from ..parse.UsagePolicy import parse_usage_policy
 
