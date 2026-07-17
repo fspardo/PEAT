@@ -114,6 +114,7 @@ class SEL3622(DeviceModule):
             initialize_file_management_pull,
             # System
             pull_usage_policy,
+            pull_web_server,
             # pull_file_management [moved to the end]
             pull_physical_sensors,
             # User
