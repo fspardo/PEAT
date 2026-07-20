@@ -1,7 +1,8 @@
 """
-Get data from /WebServer.sel.
+Pull the device's web server configuration from /WebServer.sel.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Authors: Nehal Mohamed Ameen <nmameen@sandia.gov>
+         Francisco Santana <fsantan@sandia.gov>
 """
 
 from typing import Any, Literal
@@ -13,7 +14,7 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.WebServer import parse_addresses, parse_global_config
+from ..parse.WebServer import parse_listeners, parse_global_config
 
 
 def pull_web_server_config(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -49,6 +50,6 @@ def pull_web_server_config(dev: DeviceData, session: HTTP3622) -> dict[str, Any]
 
     logger.debug("Parsing page...")
     result = parse_global_config(soup)
-    result["listeners"] = parse_addresses(soup)
+    result["listeners"] = parse_listeners(soup)
 
     return {"web_server": result}

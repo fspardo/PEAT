@@ -26,6 +26,7 @@ Authors:
 # User
 from .Users import parse_users
 from .LDAP import parse_ldap
+from .WebServer import parse_web_server
 
 # Network
 
