@@ -38,7 +38,7 @@ def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, An
     if response.status_code != 200:
         raise Exception(f"Error {response.status_code}")
     if response.history:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     return parse_user_info(dev, session.gen_soup(response.text))
 

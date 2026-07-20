@@ -7,6 +7,7 @@ Authors:
 
 from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from ..sel_http import SELHTTP, Response
@@ -57,6 +58,10 @@ class HTTP3622(SELHTTP):
             result.ok and not (result.is_redirect or result.is_permanent_redirect)
         )
 
+    def needs_selssid(self, soup: BeautifulSoup) -> bool:
+        """Checks if the SELSSID token is required to log in"""
+        return isinstance(soup.find("input", {"name": "SELSESSID", "type": "hidden"}), Tag)
+
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
@@ -74,16 +79,20 @@ class HTTP3622(SELHTTP):
 
         # Voodoo magicks be here
         # Gets a session cookie
-        if not self.get(ENDPOINTS["login"], "https"):
+        resp = self.get(ENDPOINTS["login"], "https")
+        if not resp:
             self.log.error("Could not get login page")
             return False
 
-        selssid = self.session.cookies["SELSESSID"]
-        if not selssid:
+        ssid = self.session.cookies["SELSESSID"]
+        if not ssid:
             self.log.error("Did not get a session ID")
             return False
 
-        self.session_id = selssid
+        self.session_id = ssid
+
+        if self.needs_selssid(self.gen_soup(resp.text)):
+            login_data["SELSESSID"] = ssid
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
@@ -126,7 +135,7 @@ class HTTP3622(SELHTTP):
         """
 
         assert self.gateway_logged_in
-        assert self.gateway == "SEL-3622"
+        assert self.gateway in ["SEL-3622", "SEL-3620"]
 
         idx = self.get(ENDPOINTS["dashboard"], use_cache=False)
         if not idx:
@@ -140,16 +149,22 @@ class HTTP3622(SELHTTP):
         if not isinstance(fid, Tag):
             self.log.error("Could not get fid field")
             return None
-        return fid.get_text()
+        txt = fid.get_text()
+
+        self.log.debug(f"FID: {txt}")
+
+        return txt
 
     def validate_fid(self) -> bool:
         """
-        Validate that the SEL-3622 is, in fact, an SEL-3622
+        Validate that the SEL is a supported SEL-3620 or SEL-3622 device
         """
+        VALID_FID_SUBSTRINGS = ["SEL-3622", "SEL-3620"]
+
         fid_txt = self.get_fid()
 
-        if not fid_txt or not "SEL-3622" in fid_txt:
-            self.log.error("This device is not an SEL-3622")
+        if not fid_txt or not any([x in fid_txt for x in VALID_FID_SUBSTRINGS]):
+            self.log.error("This device is not an SEL-3620 or SEL-3622")
             return False
 
         return True
@@ -158,13 +173,13 @@ class HTTP3622(SELHTTP):
         """
         Log out of an SEL-3622 gateway
         """
-        if self.gateway_logged_in and self.gateway == "SEL-3622":
+        if self.gateway_logged_in and self.gateway not in ["SEL-3622", "SEL-3620"]:
             self.get(ENDPOINTS["logout"], use_cache=False)
             self.gateway_logged_in = False
             del self.gateway
 
     def disconnect(self) -> None:
-        if self.gateway_logged_in and self.gateway == "SEL-3622":
+        if self.gateway_logged_in and self.gateway not in ["SEL-3622", "SEL-3620"]:
             self.logout()
         return super().disconnect()
 

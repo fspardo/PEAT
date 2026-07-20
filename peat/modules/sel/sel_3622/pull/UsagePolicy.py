@@ -11,6 +11,7 @@ from bs4.element import Tag
 from peat import DeviceData
 
 from ..http import HTTP3622
+from ..parse.UsagePolicy import parse_usage_policy
 
 
 def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -27,14 +28,10 @@ def pull_usage_policy(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if not response:
         raise Exception("No response")
     if len(response.history) > 0:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
     if response.status_code != 200:
         raise Exception("Non-200 status code")
 
     soup = session.gen_soup(response.text)
 
-    textarea = soup.find("textarea", {"id": "UseBanner"})
-    if not isinstance(textarea, Tag):
-        raise Exception("Could not find text area")
-
-    return {"usage_policy": textarea.get_text(strip=True)}
+    return {"usage_policy": parse_usage_policy(soup)}

@@ -13,84 +13,7 @@ from loguru import logger as log
 from peat import DeviceData
 
 from ..http import HTTP3622
-
-
-def pull_table(session: HTTP3622) -> Tag:
-    """
-    Pull the table from the session
-    """
-
-    response = session.get_endpoint("static_routes")
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Status code {response.status_code}")
-    if response.history:
-        raise Exception("Redirected")
-
-    soup = session.gen_soup(response.text)
-
-    table = soup.find("table", {"id": "staticRoute", "class": "fieldList"})
-    if not isinstance(table, Tag):
-        raise Exception("Could not get table")
-
-    return table
-
-
-def get_connection_rule(row: Tag) -> Literal["Forward", "Drop", "Reject"]:
-    """
-    Get the rulename of the connection (Forward, Drop, or Reject)
-    """
-    fwd = row.find("td", {"class": "connectionForward"})
-    drp = row.find("td", {"class": "connectionDrop"})
-    rej = row.find("td", {"class": "connectionReject"})
-
-    if isinstance(fwd, Tag):
-        return "Forward"
-    elif isinstance(drp, Tag):
-        return "Drop"
-    elif isinstance(rej, Tag):
-        return "Reject"
-    else:
-        raise Exception("Could not get rule")
-
-
-def extract_row(row: Tag) -> tuple[str, dict[str, Any]]:
-    """
-    Extracts the static route configuration from a row of the table
-    """
-    result = {}
-    id = row.attrs["id"]
-    log.debug(f"id={id}")
-
-    action = get_connection_rule(row)
-    log.debug(f"--> action={action}")
-
-    gateway = row.find("td", {"class": "remoteGateway"})
-    assert isinstance(gateway, Tag)
-    gateway = gateway.get_text(",").split(",")
-    log.debug(f"--> gateway={gateway}")
-
-    remote = row.find("td", {"class": "remoteNetwork"})
-    assert isinstance(remote, Tag)
-    remote = remote.get_text(",").split(",")[1]
-    log.debug(f"--> remote={remote}")
-
-    result["action"] = action
-    result["network"] = remote
-
-    if action == "Forward":
-        result["gateway_name"] = gateway[0]
-        result["gateway_address"] = gateway[1]
-
-    return id, result
-
-
-def extract_rows(rows: list[Tag]) -> list[tuple[str, dict[str, Any]]]:
-    """
-    Extracts ALL rows from the result set
-    """
-    return [extract_row(row) for row in rows]  # Extract row data
+from ..parse.StaticRoutes import parse_static_routes
 
 
 def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -107,7 +30,14 @@ def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     | `static_routes.[id].network`         | The network the traffic is destined to                                  |
     """
 
-    table = pull_table(session)
-    rows = table.find_all("tr")
+    response = session.get_endpoint("static_routes")
+    if not response:
+        raise Exception("No response")
+    if response.status_code != 200:
+        raise Exception(f"Status code {response.status_code}")
+    if response.history:
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
-    return {"static_routes": {id: data for id, data in extract_rows(rows[1:])}}
+    soup = session.gen_soup(response.text)
+
+    return {"static_routes": parse_static_routes(soup)}

@@ -1,5 +1,5 @@
 """
-Extract data from the /Hosts.sel endpoint
+Extract data from the /index.sel endpoint
 
 Author: Francisco Santana <fsantan@sandia.gov>
 """
@@ -13,21 +13,19 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.Hosts import parse_settings
+from ..parse.index import parse_index
 
 
-def pull_hosts(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_index(dev: DeviceData, session: HTTP3622, data: dict[str, Any]):
     """
-    Pull the configuration under /Hosts.sel
+    This works a bit differently. Some information is not available from the
+    respective pages, while others are seemingly unique.
 
-    | Field              | Description                    |
-    |--------------------|--------------------------------|
-    | `hosts`            | Root container                 |
-    | `hosts.[hostname]` | Mapping of hostname to address |
-
+    This is to be run last.
     """
+    logger.debug("Pulling page...")
+    response = session.get_endpoint("dashboard")
 
-    response = session.get_endpoint("hosts")
     if not response:
         raise Exception("No response")
     if response.status_code != 200:
@@ -35,5 +33,10 @@ def pull_hosts(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.history:
         raise Exception(f"Redirected to {response.history[-1].url}")
 
+    soup = session.gen_soup(response.text)
+
     logger.debug("Parsing page...")
-    return {"hosts": parse_settings(session.gen_soup(response.text))}
+
+    parse_index(soup, data)
+
+    pass

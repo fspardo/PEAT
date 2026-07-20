@@ -38,7 +38,7 @@ def pull_passwd_mgmt(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.status_code != 200:
         raise Exception(f"Got non-200 status: {response.status_code}")
     if response.history:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     soup = session.gen_soup(response.text)
 
@@ -46,4 +46,4 @@ def pull_passwd_mgmt(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
 
     result = parse_passwd_mgmt(soup)
 
-    return {"host_keys": result}
+    return {"password_mgmt": result}

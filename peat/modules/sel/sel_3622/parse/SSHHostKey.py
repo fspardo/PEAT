@@ -29,6 +29,6 @@ def parse_host_keys(soup: BeautifulSoup) -> dict[str, Any]:
         pre = form.find("pre")
         assert isinstance(pre, Tag)
 
-        result[f] = pre.get_text("\n", True).splitlines()
+        result[f] = pre.get_text("\n", True)
 
     return result

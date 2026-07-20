@@ -20,7 +20,7 @@ def pull_dictionary(
     dev: DeviceData,
     session: HTTP3622,
     soup: BeautifulSoup,
-) -> list[str] | None:
+) -> str | None:
     t = soup.find("input", {"name": "t"})
     if not isinstance(t, Tag):
         logger.error("Could not get token value")
@@ -48,7 +48,7 @@ def pull_dictionary(
 
     dev.write_file(response.text, "Dictionary.sel")
     dev.related.files.add("Dictionary.sel")
-    return response.text.splitlines()
+    return response.text
 
 
 def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
@@ -81,7 +81,7 @@ def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     if response.status_code != 200:
         raise Exception(f"Got non-200 status: {response.status_code}")
     if response.history:
-        raise Exception("Redirected")
+        raise Exception(f"Redirected to {response.history[-1].url}")
 
     soup = session.gen_soup(response.text)
 
