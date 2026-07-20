@@ -136,6 +136,7 @@ class SEL3622(DeviceModule):
             # Network
             Method(pull_network_settings, 3),
             Method(pull_static_routes, 3),
+            # TODO: pull NAT
             Method(pull_syslog_settings, 3),
             Method(pull_firewall_rules, 3),
             Method(pull_hosts, 3),
