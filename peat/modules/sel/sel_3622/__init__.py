@@ -9,12 +9,13 @@ Authors:
     - Francisco Santana <fsantan@sandia.gov>
 """
 
+from time import sleep
+
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-from time import sleep
-from .pull import *
 from .method import Method
+from .pull import *
 
 
 class SEL3622(DeviceModule):
@@ -161,7 +162,6 @@ class SEL3622(DeviceModule):
         tried_methods = 0
 
         for method in methods:
-
             tried_methods += 1
             cls.log.info(
                 f'({tried_methods}/{len(methods)}) Attempting method "{method.handler.__name__}" for {dev.ip}:{port}'

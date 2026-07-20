@@ -5,9 +5,12 @@ Code for handling methods
 from dataclasses import dataclass
 from types import FunctionType
 from typing import Any
-from peat import DeviceData
-from .http import HTTP3622
+
 from loguru import logger
+
+from peat import DeviceData
+
+from .http import HTTP3622
 
 
 def check_firmware_compat(ver: int, ranges: list[range | int]) -> bool:
@@ -49,9 +52,7 @@ class Method:
 
         if len(self.for_device) > 0 and device not in self.for_device:
             raise Exception("Incompatible device")
-        elif len(self.for_firmware) > 0 and check_firmware_compat(
-            firmware, self.for_firmware
-        ):
+        elif len(self.for_firmware) > 0 and check_firmware_compat(firmware, self.for_firmware):
             raise Exception("Incompatible firmware")
 
         ex: Exception | None = None

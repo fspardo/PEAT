@@ -14,42 +14,43 @@ from loguru import logger
 
 from peat import DeviceData
 
+
 def get_txt_input_value(soup: BeautifulSoup | Tag, eid: str) -> str:
-  """Get the value of a text input by ID"""
-  tag = soup.find("input", {"type": "text", "id": eid})
-  assert isinstance(tag, Tag)
-  
-  value = tag.get("value", "")
-  assert isinstance(value, str)
-  
-  return value.strip()
+    """Get the value of a text input by ID"""
+    tag = soup.find("input", {"type": "text", "id": eid})
+    assert isinstance(tag, Tag)
+
+    value = tag.get("value", "")
+    assert isinstance(value, str)
+
+    return value.strip()
 
 
 def get_select_input_value(soup: BeautifulSoup | Tag, eid: str) -> str | None:
-  tag = soup.find("select", {"id": eid})
-  assert isinstance(tag, Tag)
-  
-  opt = tag.find("option", {"selected": "selected"})
-  if not opt:
-    return None
-   
-  return opt.get_text("", True)
+    tag = soup.find("select", {"id": eid})
+    assert isinstance(tag, Tag)
+
+    opt = tag.find("option", {"selected": "selected"})
+    if not opt:
+        return None
+
+    return opt.get_text("", True)
 
 
 def get_checkbox_value(soup: BeautifulSoup | Tag, eid: str) -> bool:
-  tag = soup.find("input", {"type": "checkbox", "id": eid})
-  assert isinstance(tag, Tag)
-  
-  value = tag.get("value")
-  assert isinstance(value, str)
-  
-  return value == "true"
+    tag = soup.find("input", {"type": "checkbox", "id": eid})
+    assert isinstance(tag, Tag)
+
+    value = tag.get("value")
+    assert isinstance(value, str)
+
+    return value == "true"
 
 
 def element_exists(soup: BeautifulSoup | Tag, tagty: str, eid: str) -> bool:
-  tag = soup.find(tagty, {"id": eid})
-  
-  return isinstance(tag, Tag)
+    tag = soup.find(tagty, {"id": eid})
+
+    return isinstance(tag, Tag)
 
 
 def parse_global_config(soup: BeautifulSoup) -> dict[str, Any]:
@@ -57,9 +58,9 @@ def parse_global_config(soup: BeautifulSoup) -> dict[str, Any]:
     assert isinstance(table, Tag)
 
     sess_timeout = get_txt_input_value(table, "SessionTimeout")
-    cert = get_select_input_option(table, "X509Certificate")
-    if not cert: 
-      cert = "Default"
+    cert = get_select_input_value(table, "X509Certificate")
+    if not cert:
+        cert = "Default"
 
     result = {
         "port": int(get_txt_input_value(table, "Port")),
@@ -70,7 +71,7 @@ def parse_global_config(soup: BeautifulSoup) -> dict[str, Any]:
     if element_exists(table, "input", "ServicePortEnabled"):
         result["service_port"] = {}
         result["service_port"]["enabled"] = get_checkbox_value(table, "ServicePortEnabled")
-        result["service_port"]["port"] = int(get_txt_input_value(table, "ServicePortNumber")
+        result["service_port"]["port"] = int(get_txt_input_value(table, "ServicePortNumber"))
 
     return result
 

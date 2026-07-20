@@ -14,7 +14,7 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP3622
-from ..parse.WebServer import parse_listeners, parse_global_config
+from ..parse.WebServer import parse_global_config, parse_listeners
 
 
 def pull_web_server_config(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
