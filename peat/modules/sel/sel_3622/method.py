@@ -13,9 +13,35 @@ from peat import DeviceData
 from .http import HTTP3622
 
 
-def check_firmware_compat(ver: int, ranges: list[range | int]) -> bool:
+class AdvancedRange:
+    """An inclusive range type for versioning."""
+
+    low: int | None
+    high: int | None
+
+    def __init__(self, low: int | None = None, high: int | None = None):
+        self.low = low
+        self.high = high
+
+    def __contains__(self, value: int) -> bool:
+        result = True
+
+        if self.low:
+            result = value >= self.low
+
+        if self.high and result:
+            result = self.high >= value
+
+        return result
+
+
+def irange(low: int | None = None, high: int | None = None) -> AdvancedRange:
+    return AdvancedRange(low, high)
+
+
+def check_firmware_compat(ver: int, ranges: list[AdvancedRange | int]) -> bool:
     for r in ranges:
-        if isinstance(r, range):
+        if isinstance(r, AdvancedRange):
             if ver in r:
                 return True
         else:
@@ -26,17 +52,19 @@ def check_firmware_compat(ver: int, ranges: list[range | int]) -> bool:
 
 
 class Method:
+    """Handles methods and compatibility"""
+
     handler: FunctionType
     attempts: int
     for_device: list[str]
-    for_firmware: list[range | int]
+    for_firmware: list[AdvancedRange | int]
 
     def __init__(
         self,
         handler: FunctionType,
         attempts: int = 3,
         for_device: list[str] = [],
-        for_firmware: list[range | int] = [],
+        for_firmware: list[AdvancedRange | int] = [],
     ):
         self.handler = handler
         self.attempts = attempts
@@ -52,7 +80,9 @@ class Method:
 
         if len(self.for_device) > 0 and device not in self.for_device:
             raise Exception("Incompatible device")
-        elif len(self.for_firmware) > 0 and check_firmware_compat(firmware, self.for_firmware):
+        elif len(self.for_firmware) > 0 and check_firmware_compat(
+            firmware, self.for_firmware
+        ):
             raise Exception("Incompatible firmware")
 
         ex: Exception | None = None
