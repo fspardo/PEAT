@@ -32,7 +32,6 @@ def parse_passwd_mgmt(soup: BeautifulSoup) -> dict[str, Any]:
         result["messages"] = messages
 
     for s in SPANS:
-        logger.debug(f"{s} -> {SPANS[s]}")
         x = soup.find("span", {"id": SPANS[s]})
         assert isinstance(x, Tag)
         result[s] = x.get_text("", True)
