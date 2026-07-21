@@ -14,7 +14,8 @@ from time import sleep
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-from .method import Method, AdvancedRange as AR
+from .method import AdvancedRange as AR
+from .method import Method
 from .pull import *
 
 
@@ -153,7 +154,7 @@ class SEL3622(DeviceModule):
             Method(pull_passwd_mgmt, 3),
             # Reports
             Method(pull_syslog_report, 3),
-            Method(pull_diagnostics, 3),
+            Method(pull_diagnostics, 3, for_device=["SEL-3622"], for_firmware=AR(200, 200)),
             # File Management is last to allow for enough time to see an update to the configuration
             Method(pull_file_management, 1, for_firmware=AR(None, 200)),
         ]
@@ -172,6 +173,7 @@ class SEL3622(DeviceModule):
                 result = method.handle(dev, session)
                 if result is None:
                     cls.log.info("Method was not compatible")
+                    used_methods[method.handler.__name__] = "NOT COMPAT"
                     continue
 
                 for k in result:
@@ -183,7 +185,6 @@ class SEL3622(DeviceModule):
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
                 sleep(1)
-                break
             except Exception as e:
                 cls.log.exception(f"Exception caught: {e}")
                 used_methods[method.handler.__name__] = "NOT OK"
