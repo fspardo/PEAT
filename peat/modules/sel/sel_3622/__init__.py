@@ -14,7 +14,7 @@ from time import sleep
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .http import HTTP3622
-from .method import Method
+from .method import Method, AdvancedRange as AR
 from .pull import *
 
 
@@ -122,7 +122,7 @@ class SEL3622(DeviceModule):
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
-            Method(initialize_file_management_pull, 1),
+            Method(initialize_file_management_pull, 1, for_firmware=AR(None, 200)),
             # System
             Method(pull_usage_policy, 3),
             Method(pull_web_server_config, 3),
@@ -155,7 +155,7 @@ class SEL3622(DeviceModule):
             Method(pull_syslog_report, 3),
             Method(pull_diagnostics, 3),
             # File Management is last to allow for enough time to see an update to the configuration
-            Method(pull_file_management, 1),
+            Method(pull_file_management, 1, for_firmware=AR(None, 200)),
         ]
         pulled_config = {}
         used_methods = {}
@@ -170,6 +170,10 @@ class SEL3622(DeviceModule):
 
             try:
                 result = method.handle(dev, session)
+                if result is None:
+                    cls.log.info("Method was not compatible")
+                    continue
+
                 for k in result:
                     if k in pulled_config:
                         cls.log.warning(

@@ -28,11 +28,20 @@ class AdvancedRange:
 
         if self.low:
             result = value >= self.low
-
         if self.high and result:
             result = self.high >= value
 
         return result
+
+    def __str__(self) -> str:
+        if self.low and self.high:
+            return f"{self.low} - {self.high}"
+        elif self.low:
+            return f">= {self.low}"
+        elif self.high:
+            return f"<= {self.high}"
+        else:
+            return "any"
 
 
 def irange(low: int | None = None, high: int | None = None) -> AdvancedRange:
@@ -57,33 +66,34 @@ class Method:
     handler: FunctionType
     attempts: int
     for_device: list[str]
-    for_firmware: list[AdvancedRange | int]
+    for_firmware: AdvancedRange
 
     def __init__(
         self,
         handler: FunctionType,
         attempts: int = 3,
         for_device: list[str] = [],
-        for_firmware: list[AdvancedRange | int] = [],
+        for_firmware: AdvancedRange = AdvancedRange(),
     ):
         self.handler = handler
         self.attempts = attempts
         self.for_device = for_device
         self.for_firmware = for_firmware
 
-    def handle(self, dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+    def iscompat(self, dev: DeviceData) -> bool:
         device = dev._cache["DEVICE"]
         firmware = dev._cache["VERSION"]
 
-        logger.debug(f"Device: {device} ({self.for_device})")
-        logger.debug(f"Firmware: {firmware} ({self.for_firmware})")
-
         if len(self.for_device) > 0 and device not in self.for_device:
-            raise Exception("Incompatible device")
-        elif len(self.for_firmware) > 0 and check_firmware_compat(
-            firmware, self.for_firmware
-        ):
-            raise Exception("Incompatible firmware")
+            return False
+        elif firmware not in self.for_firmware:
+            return False
+
+        return True
+
+    def handle(self, dev: DeviceData, session: HTTP3622) -> dict[str, Any] | None:
+        if not self.iscompat(dev):
+            return None
 
         ex: Exception | None = None
         for a in range(self.attempts):
