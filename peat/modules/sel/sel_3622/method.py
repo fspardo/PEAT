@@ -48,18 +48,6 @@ def irange(low: int | None = None, high: int | None = None) -> AdvancedRange:
     return AdvancedRange(low, high)
 
 
-def check_firmware_compat(ver: int, ranges: list[AdvancedRange | int]) -> bool:
-    for r in ranges:
-        if isinstance(r, AdvancedRange):
-            if ver in r:
-                return True
-        else:
-            if ver == r:
-                return True
-
-    return False
-
-
 class Method:
     """Handles methods and compatibility"""
 
