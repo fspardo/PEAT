@@ -1,9 +1,5 @@
 """
-SEL-3622 Security Gateway.
-
-The docs call this a "small form-factor" version of the 3620,
-but the differences seem to go deeper than calling it the
-3620's dwarf brother.
+SEL-362X Security Gateway.
 
 Authors:
     - Francisco Santana <fsantan@sandia.gov>
@@ -19,18 +15,17 @@ from .method import Method
 from .pull import *
 
 
-class SEL3622(DeviceModule):
+class SEL362X(DeviceModule):
     """
+    SEL-3620 Security Gateway
     SEL-3622 Ethernet Security Gateway.
-
-    AKA the SEL-3620 Slim.
     """
 
     device_type = "Gateway"
     vendor_id = "SEL"
     vendor_name = "Schweitzer Engineering Laboratories"
     brand = "SEL"
-    module_aliases = ["sel-3622", "3622", "sel-3620-slim", "3620-slim"]
+    module_aliases = ["sel-3622", "sel-3620", "sel-362x"]
     default_options = {"web": {"user": "admin", "pass": "Admin123!", "users": []}}
 
     @classmethod
@@ -80,9 +75,9 @@ class SEL3622(DeviceModule):
     @classmethod
     def _verify_http(cls, dev: DeviceData) -> bool:
         """
-        Validate that the device is an SEL-3622 via its HTTPS web interface
+        Validate that the device is an SEL-362X via its HTTPS web interface
         """
-        cls.log.info(f"SEL/3622: Verifying {dev.ip} via HTTPS")
+        cls.log.info(f"SEL/362X: Verifying {dev.ip} via HTTPS")
 
         session = cls.get_session(dev)
         if not session:
@@ -100,10 +95,10 @@ class SEL3622(DeviceModule):
     @classmethod
     def _pull(cls, dev: DeviceData) -> bool:
         """
-        Pull data from the SEL 3622
+        Pull data from the SEL 362X
         """
 
-        cls.log.info(f"SEL/3622: Pulling information")
+        cls.log.info(f"SEL/362X: Pulling information")
 
         session = cls.get_session(dev)
         port = dev.options["https"]["port"]
@@ -154,7 +149,9 @@ class SEL3622(DeviceModule):
             Method(pull_passwd_mgmt, 3),
             # Reports
             Method(pull_syslog_report, 3),
-            Method(pull_diagnostics, 3, for_device=["SEL-3622"], for_firmware=AR(200, 200)),
+            Method(
+                pull_diagnostics, 3, for_device=["SEL-3622"], for_firmware=AR(200, 200)
+            ),
             # File Management is last to allow for enough time to see an update to the configuration
             Method(pull_file_management, 1, for_firmware=AR(None, 200)),
         ]
@@ -194,26 +191,26 @@ class SEL3622(DeviceModule):
         except Exception as e:
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
-        dev.write_file(pulled_config, "web_cfg.json")
+        dev.write_file(pulled_config, "web_cfg.json") # Full web configuration
         dev.write_file(used_methods, "attempted_methods.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)
+
+        # TODO: populate device overview with data
 
         return True
 
 
 # This seems to list the methods to be used to perform validation
-SEL3622.ip_methods = [
+SEL362X.ip_methods = [
     IPMethod(
         name="Perform a Web fingerprint (SEL-3622)",
-        description=str(SEL3622._verify_http.__doc__).strip(),
+        description=str(SEL362X._verify_http.__doc__).strip(),
         type="unicast_ip",
-        identify_function=SEL3622._verify_http,
+        identify_function=SEL362X._verify_http,
         default_port=443,
         protocol="https",
         reliability=5,  # TODO: Determine value
         transport="tcp",
     )
 ]
-
-__all__ = ["SEL3622"]
