@@ -105,7 +105,7 @@ def get_table_rows(table: Tag, recurse: bool = False) -> list[Tag]:
     t = find_tags(table, "tr", attrib={"class": ["odd", "even"]}, recursive=recurse)
 
     if not t:
-        raise Exception(f"Could not get table elements")
+        return []
     else:
         return t
 
