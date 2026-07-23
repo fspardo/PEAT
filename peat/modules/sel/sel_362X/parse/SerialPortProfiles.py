@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 COLUMNS = {
@@ -28,18 +30,14 @@ COLUMNS = {
 def parse_profiles(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
 
-    table = soup.find("table", {"id": "serialPorts"})
-    assert isinstance(table, Tag)
-    entries = table.find_all("tr", {"class": ["even", "odd"]})
+    table = find_table(soup, {"id": "serialPorts"})
+    entries = get_table_rows(table)
 
     for e in entries:
         entry = {}
-        assert isinstance(e, Tag)
 
         for c in COLUMNS:
-            d = e.find("td", {"class": COLUMNS[c]})
-            assert isinstance(d, Tag)
-            entry[c] = d.get_text(strip=True)
+            entry[c] = get_text_of(e, "td", {"class": COLUMNS[c]})
 
         name = entry["name"]
         del entry["name"]

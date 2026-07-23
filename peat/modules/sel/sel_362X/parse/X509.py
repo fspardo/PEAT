@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 BASIC_DATA = {
@@ -56,9 +58,7 @@ def parse_certificates_advanced(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
 
     for k in ADVANCED_DATA:
-        d = soup.find("label", {"id": ADVANCED_DATA[k]})
-        assert isinstance(d, Tag)
-        result[k] = d.get_text("", True)
+        result[k] = get_text_of(soup, "label", {"id": ADVANCED_DATA[k]})
 
     return result
 
@@ -67,19 +67,14 @@ def parse_certificates_basic(soup: BeautifulSoup) -> dict[str, Any]:
     """Performs a basic parse of the table contents in the main page"""
     result = {}
 
-    table = soup.find("table", {"id": "x509List"})
-    assert isinstance(table, Tag)
-
-    rows = table.find_all("tr", {"class": ["odd", "even"]})
+    table = find_table(soup, {"id": "x509List"})
+    rows = get_table_rows(table)
 
     for row in rows:
-        x = {}
-        assert isinstance(row, Tag)
-
-        for k in BASIC_DATA:
-            a = row.find("td", {"class": f"x509_{BASIC_DATA[k]}"})
-            assert isinstance(a, Tag)
-            x[k] = a.get_text("", True)
+        x = {
+            k: get_text_of(row, "td", {"class": f"x509_{BASIC_DATA[k]}"})
+            for k in BASIC_DATA
+        }
 
         name = x["name"]
         del x["name"]

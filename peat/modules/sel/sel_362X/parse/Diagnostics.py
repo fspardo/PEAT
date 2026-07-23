@@ -252,7 +252,7 @@ def equals_parser(expected: str, if_equals: Any = True, otherwise: Any = False) 
     return fn
 
 
-HEADERS = [
+HEADERS_3622_R200 = [
     "Firewall State:",
     "Network State:",
     "Route Table State:",
@@ -272,7 +272,7 @@ HEADERS = [
     "Whitelist Enabled:",
 ]
 
-FIELDS = [
+FIELDS_3622_R200 = [
     "firewall_state",
     "network_state",
     "route_table_state",
@@ -292,7 +292,7 @@ FIELDS = [
     "whitelist",
 ]
 
-PARSERS = [
+PARSERS_3622_R200 = [
     parse_firewall_state,  # Firewall state
     parse_network_state,  # Network state
     parse_route_table,  # Route table state
@@ -313,7 +313,7 @@ PARSERS = [
 ]
 
 
-def parse_diagnostics(soup: BeautifulSoup) -> dict[str, Any]:
+def parse_diagnostics_3622_R200(soup: BeautifulSoup) -> dict[str, Any]:
     """
     Parse the page
     """
@@ -330,24 +330,24 @@ def parse_diagnostics(soup: BeautifulSoup) -> dict[str, Any]:
     header = -1
     p = -2
 
-    while header < len(HEADERS):
+    while header < len(HEADERS_3622_R200):
         p += 1
         header += 1
         begin = cur + 1
 
-        if header == len(HEADERS):
+        if header == len(HEADERS_3622_R200):
             cur = len(pre)
         else:
-            logger.debug(f"Finding header {HEADERS[header]}")
+            logger.debug(f"Finding header {HEADERS_3622_R200[header]}")
 
-            while cur < len(pre) and pre[cur] != HEADERS[header]:
+            while cur < len(pre) and pre[cur] != HEADERS_3622_R200[header]:
                 cur += 1
 
         if p < 0:
             continue
 
-        logger.debug(f"Parsing {FIELDS[p]} with {PARSERS[p].__name__}")
+        logger.debug(f"Parsing {FIELDS_3622_R200[p]} with {PARSERS_3622_R200[p].__name__}")
 
-        result[FIELDS[p]] = PARSERS[p](pre[begin : cur - 1])
+        result[FIELDS_3622_R200[p]] = PARSERS_3622_R200[p](pre[begin : cur - 1])
 
     return result

@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 SETTINGS_TABLE_CHECKBOXES: Final[dict[str, str]] = {
@@ -57,22 +59,24 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
     get_host_ports = []
 
-    table = soup.find("table", {"id": "RADIUSSettingsTable"})
-    if not isinstance(table, Tag):
-        raise Exception("Could not find config table")
+    table = find_table(soup, {"id": "RADIUSSettingsTable"})
 
     for checkbox in SETTINGS_TABLE_CHECKBOXES:
-        v = table.find("input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]})
-        assert isinstance(v, Tag)
-        result[checkbox] = v.get("checked", "no") == "checked"
+        result[checkbox] = (
+            get_attrib(
+                find_tag_f(
+                    table, "input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]}
+                ),
+                "checked",
+            )
+            == "checked"
+        )
 
     for dropdown in SETTINGS_TABLE_HOST_DROPDOWNS:
         # Get the dropdown item in the table
-        v = table.find("select", {"id": SETTINGS_TABLE_HOST_DROPDOWNS[dropdown]})
-        assert isinstance(v, Tag)
+        v = find_tag_f(table, "select", {"id": SETTINGS_TABLE_HOST_DROPDOWNS[dropdown]})
         # Get the selected option
-        s = v.find("option", {"selected": "selected"})
-        assert isinstance(s, Tag)
+        s = find_tag_f(v, "option", {"selected": "selected"})
         # Get the IP address if the selected item is "IP Address"
         if s.get("value", "0") == "0":
             # Assert that the dropdown is recognized
@@ -80,9 +84,8 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
                 # Get the IP address
                 addr_parts = []
                 for part in SETTINGS_TABLE_HOST_IP_ADDR[dropdown]:
-                    v = table.find("input", {"id": part})
-                    assert isinstance(v, Tag)
-                    value = v.get("value")
+                    v = find_tag_f(table, "input", {"id": part})
+                    value = get_value(v)
                     if value == "":
                         addr_parts = []
                         break
@@ -104,23 +107,17 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
         if host in SETTINGS_TABLE_HOST_PORTS:
             for portname in SETTINGS_TABLE_HOST_PORTS[host]:
                 p, d = SETTINGS_TABLE_HOST_PORTS[host][portname]
-                v = table.find("input", {"id": p})
-                assert isinstance(v, Tag)
-                port = v.get("value", "")
-                assert isinstance(port, str)
+                v = find_tag_f(table, "input", {"id": p})
+                port = get_value(v)
 
                 if port == "":
                     port = d
                 result[host][portname] = int(port)
 
-    v = table.find("select", {"name": "RADIUSAuthTypeId"})
-    assert isinstance(v, Tag)
-    s = v.find("option", {"selected": "selected"})
-    assert isinstance(s, Tag)
-    result["auth_type"] = s.get_text(strip=True)
+    v = find_tag_f(table, "select", {"name": "RADIUSAuthTypeId"})
+    result["auth_type"] = get_text_of(v, "option", {"selected": "selected"})
 
-    v = table.find("input", {"id": "message_timeout"})
-    assert isinstance(v, Tag)
-    result["timeout"] = v.get("value")
+    v = find_tag_f(table, "input", {"id": "message_timeout"})
+    result["timeout"] = get_value(v)
 
     return result

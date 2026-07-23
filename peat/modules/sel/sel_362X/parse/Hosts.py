@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -20,18 +22,12 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     """
     result = {}
 
-    table = soup.find("table", {"id": "HostnameTable"})
-    if not isinstance(table, Tag):
-        raise Exception("Table not found")
-
-    rows = table.find_all("tr", {"class": ["even", "odd"]})
+    table = find_table(soup, {"id": "HostnameTable"})
+    rows = get_table_rows(table)
 
     for row in rows:
-        assert isinstance(row, Tag)
-        name = row.find("td", {"class": "hostname"})
-        assert isinstance(name, Tag)
-        address = row.find("td", {"class": "ip_address"})
-        assert isinstance(address, Tag)
+        name = get_text_of(row, "td", {"class": "hostname"})
+        address = get_text_of(row, "td", {"class": "ip_address"})
 
-        result[name.get_text(strip=True)] = address.get_text(strip=True)
+        result[name] = address
     return result

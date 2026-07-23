@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 FORMS = {
@@ -20,15 +22,9 @@ FORMS = {
 
 
 def parse_host_keys(soup: BeautifulSoup) -> dict[str, Any]:
-    """Performs a basic parse of the table contents in the main page"""
-    result = {}
-
-    for f in FORMS:
-        form = soup.find("form", {"id": FORMS[f]})
-        assert isinstance(form, Tag)
-        pre = form.find("pre")
-        assert isinstance(pre, Tag)
-
-        result[f] = pre.get_text("\n", True)
+    """Read the public keys on this system"""
+    result = {
+        f: get_text_of(find_tag_f(soup, "form", {"id": FORMS[f]}), "pre") for f in FORMS
+    }
 
     return result

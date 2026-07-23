@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -29,9 +31,7 @@ def parse_rule(tag: Tag) -> dict[str, Any]:
         ]
 
         def getk(tag: Tag, k: str) -> list[str]:
-            v = tag.find("td", {"class": k})
-            assert isinstance(v, Tag)
-            return v.get_text("\n", True).splitlines()
+            return get_text_of(tag, "td", {"class": k}).splitlines()
 
         values = {k: getk(tag, k) for k in strs}
 
@@ -64,11 +64,8 @@ def parse_general_rules(soup: BeautifulSoup) -> dict[str, Any]:
     }
 
     def getinpt(soup: BeautifulSoup, k: str) -> str:
-        v = soup.find("input", {"id": k})
-        assert isinstance(v, Tag)
-        v = v.get("value")
-        assert isinstance(v, str)
-        return v
+        v = find_tag_f(soup, "input", {"id": k})
+        return get_value(v)
 
     return {k: getinpt(soup, keys[k]) for k in keys}
 
@@ -81,6 +78,8 @@ def parse_rules(soup: BeautifulSoup) -> dict[str, Any]:
 
     result.update(parse_general_rules(soup))
 
-    result["rules"] = [parse_rule(row) for row in soup.find_all("tr", {"class": ["odd", "even"]})]
+    result["rules"] = [
+        parse_rule(row) for row in find_tags(soup, "tr", {"class": ["odd", "even"]})
+    ]
 
     return result

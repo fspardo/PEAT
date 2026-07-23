@@ -11,42 +11,34 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
 def parse_row(tr: Tag) -> dict[str, Any]:
-    ip = tr.find("td", {"class": "syslog_ip"})
-    port = tr.find("td", {"class": "port"})
-    threshold = tr.find("td", {"class": "threshold"})
-    description = tr.find("td", {"class": "description"})
-    assert isinstance(ip, Tag)
-    assert isinstance(port, Tag)
-    assert isinstance(threshold, Tag)
-    assert isinstance(description, Tag)
+    ip = get_text_of_f(tr, "td", {"class": "syslog_ip"})
+    port = get_text_of_f(tr, "td", {"class": "port"})
+    threshold = get_text_of_f(tr, "td", {"class": "threshold"})
+    description = get_text_of_f(tr, "td", {"class": "description"})
 
     return {
-        "ip": ip.get_text(strip=True),
-        "port": port.get_text(strip=True),
-        "threshold": threshold.get_text(strip=True),
-        "description": description.get_text(strip=True),
+        "ip": ip,
+        "port": port,
+        "threshold": threshold,
+        "description": description,
     }
 
 
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
-    oum = soup.find("div", {"id": "syslog_oldest_message_numb"})
-    assert isinstance(oum, Tag)
-    oum = oum.get_text(strip=True)
+    oum = get_text_of(soup, "div", {"id": "syslog_oldest_message_numb"})
 
-    sellvl = soup.find("td", {"class": "loggingThresholdFG"})
-    assert isinstance(sellvl, Tag)
-    sellvl = sellvl.get_text(strip=True).removeprefix("Selected Level: ")
+    sellvl = get_text_of(soup, "td", {"class": "loggingThresholdFG"}).removeprefix(
+        "Selected Level: "
+    )
 
-    table = soup.find("table", {"id": "SyslogDestinations"})
-    assert isinstance(table, Tag)
-    entries = {
-        str(tr.get("id", "N/A")): parse_row(tr)
-        for tr in table.find_all("tr", {"class": ["odd", "even"]})
-    }
+    table = find_table(soup, {"id": "SyslogDestinations"})
+    entries = {str(tr.get("id", "N/A")): parse_row(tr) for tr in get_table_rows(table)}
 
     return {
         "oldest_unacknowledged": oum,

@@ -13,6 +13,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -58,28 +60,20 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     """Parse SNMP settings"""
     result = {}
 
-    enabled = soup.find("input", {"id": "Enabled", "type": "checkbox"})
-    assert isinstance(enabled, Tag)
-    result["enabled"] = enabled.get("value") == "true"
+    enabled = find_tag_f(soup, "input", {"id": "Enabled", "type": "checkbox"})
+    result["enabled"] = get_value(enabled) == "true"
 
-    eid = soup.find("table", {"id": "snmp_engine"})
-    assert isinstance(eid, Tag)
-    eid = eid.find("td", {"class": "Alias"})
-    assert isinstance(eid, Tag)
-    result["engine_id"] = eid.get_text(strip=True).split(": ")[1]
+    eid = find_table(soup, {"id": "snmp_engine"})
+    result["engine_id"] = get_text_of(eid, "td", {"class": "Alias"}).split(": ")[1]
 
-    table = soup.find("table", {"id": "snmp_profiles"})
-    assert isinstance(table, Tag)
-    profiles = table.find_all("tr", {"class": ["odd", "even"]})
+    table = find_table(soup, {"id": "snmp_profiles"})
+    profiles = get_table_rows(table)
 
     parsed_profiles = []
     for profile in profiles:
-        assert isinstance(profile, Tag)
         p = {}
         for col in PROFILES_COLUMNS:
-            r = profile.find("td", {"class": PROFILES_COLUMNS[col]})
-            assert isinstance(r, Tag)
-            r = r.get_text(strip=True)
+            r = get_text_of(profile, "td", {"class": PROFILES_COLUMNS[col]})
 
             if col == "permissions":
                 r = [s.strip() for s in r.split(",")]
@@ -89,18 +83,15 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
 
     result["profiles"] = parsed_profiles
 
-    table = soup.find("table", {"id": "snmp_trap_servers"})
-    assert isinstance(table, Tag)
-    trap_servers = table.find_all("tr", {"class": ["odd", "even"]})
+    table = find_table(soup, {"id": "snmp_trap_servers"})
+    trap_servers = get_table_rows(table)
 
     parsed_servers = []
     for server in trap_servers:
         assert isinstance(server, Tag)
         p = {}
         for col in TRAP_SERVERS_COLUMNS:
-            r = server.find("td", {"class": TRAP_SERVERS_COLUMNS[col]})
-            assert isinstance(r, Tag)
-            r = r.get_text(separator=",", strip=True)
+            r = get_text_of(server, "td", {"class": TRAP_SERVERS_COLUMNS[col]}, ",")
 
             if col == "traps":
                 r = [s.strip() for s in r.split(",")]

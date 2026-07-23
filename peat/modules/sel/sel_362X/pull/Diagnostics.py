@@ -13,7 +13,7 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP362X
-from ..parse.Diagnostics import parse_diagnostics
+from ..parse.Diagnostics import parse_diagnostics_3622_R200
 
 
 def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
@@ -52,4 +52,4 @@ def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
         raise Exception(f"Redirected to {response.history[-1].url}")
 
     logger.debug("Parsing page...")
-    return {"diagnostics": parse_diagnostics(session.gen_soup(response.text))}
+    return {"diagnostics": parse_diagnostics_3622_R200(session.gen_soup(response.text))}

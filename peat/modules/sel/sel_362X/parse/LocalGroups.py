@@ -11,25 +11,21 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
-    table = soup.find("table", {"id": "local_groups"})
-    if not isinstance(table, Tag):
-        raise Exception("Table not found")
+    table = find_table(soup, {"id": "local_groups"})
 
-    rows = table.find_all("tr", attrs={"class": ["even", "odd"]}, recursive=False)
+    rows = get_table_rows(find_tag_f(table, "tbody"), False)
 
-    result = {row.get("id"): [] for row in rows}
+    result = {get_attrib_f(row, "id"): [] for row in rows}
 
     for group in result:
-        gtable = table.find("tr", {"id": f"group_{group}_users"})
-        if not isinstance(gtable, Tag):
-            continue
-
-        members = gtable.find_all("td", {"class": "Alias"})
-
+        gtable = find_tag_f(table, "tr", {"id": f"group_{group}_users"})
+        members = find_tags(gtable, "td", {"class": "Alias"})
         result[group] = [member.get_text(strip=True) for member in members]
 
     return result

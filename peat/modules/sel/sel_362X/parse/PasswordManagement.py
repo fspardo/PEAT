@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 SPANS = {
@@ -23,17 +25,12 @@ SPANS = {
 
 def parse_passwd_mgmt(soup: BeautifulSoup) -> dict[str, Any]:
     """Performs a basic parse of the table contents in the main page"""
-    result = {}
+    result: dict[str, str | list[str]] = {
+        s: get_text_of(soup, "span", {"id": SPANS[s]}) for s in SPANS
+    }
 
-    messages = soup.find("div", {"id": "Messages"})
-    assert isinstance(messages, Tag)
-    messages = messages.get_text("\n", True).splitlines()
+    messages = get_text_of(soup, "div", {"id": "Messages"}).splitlines()
     if len(messages) > 0:
         result["messages"] = messages
-
-    for s in SPANS:
-        x = soup.find("span", {"id": SPANS[s]})
-        assert isinstance(x, Tag)
-        result[s] = x.get_text("", True)
 
     return result

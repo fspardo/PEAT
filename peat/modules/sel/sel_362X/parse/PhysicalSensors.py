@@ -9,29 +9,27 @@ from typing import Any, Literal
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from .helper import *
+
 from peat import DeviceData
 
 
-def get_input_value(s: BeautifulSoup, type: Literal["checkbox", "text"], id: str) -> str:
+def get_input_value(
+    s: BeautifulSoup, type: Literal["checkbox", "text"], id: str
+) -> str:
     """
     Get the value of an input field based on its type and ID.
     """
-
-    field = s.find("input", {"type": type, "id": id})
-    if not isinstance(field, Tag):
-        raise Exception("Could not find field")
-    return field.attrs["value"]
+    return get_value(find_tag_f(s, "input", {"type": type, "id": id}))
 
 
 def get_radio_value(s: BeautifulSoup, name: str) -> str:
     """
     Get the value of a radio field based on its name
     """
-
-    field = s.find("input", {"type": "radio", "name": name, "checked": ""})
-    if not isinstance(field, Tag):
-        raise Exception("Could not find field")
-    return field.attrs["value"]
+    return get_value(
+        find_tag_f(s, "input", {"type": "radio", "name": name, "checked": ""})
+    )
 
 
 def enabled(s: BeautifulSoup) -> str:
@@ -49,9 +47,7 @@ def input_contact(s: BeautifulSoup) -> dict[str, Any]:
 
     # TODO: extract most recent events
     # NOTE: the sample device seems to have broken sensors
-    ic_current_state = s.find("td", {"id": "ic_current_state"})
-    if not isinstance(ic_current_state, Tag):
-        raise Exception("Could not get field")
+    ic_current_state = find_tag_f(s, "td", {"id": "ic_current_state"})
 
     return {
         "enabled": get_input_value(s, "checkbox", "ic_enable"),

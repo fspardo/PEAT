@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 GLOBAL_SETTINGS_NAME = "LDAPSettingsTable"
@@ -44,69 +46,51 @@ GROUP_MAPPINGS = {
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
 
-    table = soup.find("table", {"id": GLOBAL_SETTINGS_NAME})
-    if not isinstance(table, Tag):
-        raise Exception("Could not find config table")
+    table = find_table(soup, {"id": GLOBAL_SETTINGS_NAME})
 
-    config = {}
     logger.debug("/// Parsing global settings...")
-    for key in GLOBAL_SETTINGS:
-        v = table.find("td", {"id": GLOBAL_SETTINGS[key]})
-        assert isinstance(v, Tag)
-        config[key] = v.get_text(strip=True)
-    result["config"] = config
+    result["config"] = {
+        key: get_text_of(table, "td", {"id": GLOBAL_SETTINGS[key]})
+        for key in GLOBAL_SETTINGS
+    }
 
-    table = soup.find("table", {"id": LDAP_SERVER_LIST_NAME})
-    if not isinstance(table, Tag):
-        raise Exception("Could not find server list table")
+    table = find_table(soup, {"id": LDAP_SERVER_LIST_NAME})
 
-    list = table.find_all("tr")[1:]
+    list = get_table_rows(table)
 
     servers = {}
     logger.debug("/// Parsing LDAP server list...")
     for row in list:
-        r = {}
-        for key in LDAP_SERVER_LIST:
-            v = row.find("td", {"id": key})
-            assert isinstance(v, Tag)
-            r[key] = v.get_text(strip=True)
+        r = {key: get_text_of(row, "td", {"id": key}) for key in LDAP_SERVER_LIST}
         hostname = r["ldap_hostname"]
         del r["ldap_hostname"]
         servers[hostname] = r
     result["servers"] = servers
 
-    table = soup.find("table", {"id": ATTRIBUTE_STRINGS_NAME})
-    if not isinstance(table, Tag):
-        raise Exception("Could not find server list table")
+    table = find_table(soup, {"id": ATTRIBUTE_STRINGS_NAME})
 
     attrs = {}
     logger.debug("/// Parsing attributes...")
     for pair in ATTRIBUTE_STRINGS:
-        p = {}
-        for k in pair:
-            v = table.find("td", {"id": pair[k]})
-            assert isinstance(v, Tag)
-            p[k] = v.get_text(strip=True)
+        p = {k: get_text_of(table, "td", {"id": pair[k]}) for k in pair}
         attrs[p["label"]] = p["attribute"]
     result["attributes"] = attrs
 
-    table = soup.find("table", {"id": GROUP_MAPPINGS_NAME})
-    if not isinstance(table, Tag):
-        raise Exception("Could not find server list table")
+    table = find_table(soup, {"id": GROUP_MAPPINGS_NAME})
 
-    list = table.find_all("tr")[1:]
+    list = get_table_rows(table)
 
     groupmaps = {}
     logger.debug("/// Parsing group mappings...")
     for row in list:
-        r = {}
-        for key in GROUP_MAPPINGS:
-            v = row.find("td", {"id": GROUP_MAPPINGS[key]})
-            assert isinstance(v, Tag)
-            r[key] = v.get_text(strip=True)
+        r = {
+            key: get_text_of(row, "td", {"id": GROUP_MAPPINGS[key]})
+            for key in GROUP_MAPPINGS
+        }
 
         if r["role"] not in groupmaps:
             groupmaps[r["role"]] = []
+
         groupmaps[r["role"]].push(r["dn"])
     result["group_mappings"] = groupmaps
 

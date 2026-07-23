@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -19,16 +21,9 @@ def get_global_cfg(
     """
     Retrieve the global configuration
     """
-    hostname = soup.find("td", {"id": "display_Hostname"})
-    domain = soup.find("td", {"id": "display_DomainName"})
-    gateway = soup.find("td", {"id": "display_Gateway"})
-
-    assert isinstance(hostname, Tag)
-    hostname = hostname.get_text("", True)
-    assert isinstance(domain, Tag)
-    domain = domain.get_text("", True)
-    assert isinstance(gateway, Tag)
-    gateway = gateway.get_text("", True)
+    hostname = get_text_of(soup, "td", {"id": "display_Hostname"})
+    domain = get_text_of(soup, "td", {"id": "display_DomainName"})
+    gateway = get_text_of(soup, "td", {"id": "display_Gateway"})
 
     result = {}
     if len(hostname) > 0:
@@ -47,12 +42,8 @@ def get_nics(
     """
     Retrieve NIC status
     """
-    table = soup.find("table", {"id": "NetworkInterfaces"})
-    if not isinstance(table, Tag):
-        raise Exception("Could not get Ethernet configuration table")
-
-    entries = table.find_all("img")
-
+    table = find_table(soup, {"id": "NetworkInterfaces"})
+    entries = find_tags(table, "img")
     result = {}
 
     for img in entries:
@@ -61,10 +52,7 @@ def get_nics(
             continue
 
         # Get information from the alt text, as it says practically everything
-        assert isinstance(img, Tag)  # Sanity check
-        alt = img.attrs["alt"]
-        assert isinstance(alt, str)  # Sanity check
-        data = alt.split(" - ")
+        data = get_attrib_f(img, "alt").split(" - ")
 
         result[data[0]] = {"status": data[1], "configured": data[2]}
 
@@ -74,16 +62,16 @@ def get_nics(
 def get_addresses(
     soup: BeautifulSoup,
 ) -> tuple[
-    dict[Literal["interface", "ip", "vlan", "webserver"], Any],
+    dict[str, Any],
     dict[str, list[str]],
 ]:
     """
-    Retrieve network addresses
-    """
-    table = soup.find("table", {"id": "EthernetAddress"})
-    assert isinstance(table, Tag)  # Table should exist
+    Retrieve network addresses and bridges
 
-    entries = table.find_all("tr")[1:]  # Skip title
+    The first element of the tuple is a dictionary of configuration data, while the other is 
+    """
+    table = find_table(soup, {"id": "EthernetAddress"})
+    entries = get_table_rows(table)
 
     def get_row(
         row: Tag,
@@ -94,29 +82,15 @@ def get_addresses(
     ]:
         repr = {}
 
-        alias = row.find("td", {"class": "ui_AddressAlias"})
-        if isinstance(alias, Tag):
-            alias = alias.get_text(strip=True)
-        else:
-            alias = ""
+        alias = get_text_of(row, "td", {"class": "ui_AddressAlias"})
+        repr["interface"] = get_text_of(row, "td", {"class": "ui_InterfaceAlias"})
+        repr["address"] = get_text_of(row, "td", {"class": "ui_IP"})
 
-        col = row.find("td", {"class": "ui_InterfaceAlias"})
-        assert isinstance(col, Tag)
-        repr["interface"] = col.get_text(strip=True)
-
-        col = row.find("td", {"class": "ui_IP"})
-        assert isinstance(col, Tag)
-        repr["address"] = col.get_text(strip=True)
-
-        col = row.find("td", {"class": "ui_VLAN"})
-        assert isinstance(col, Tag)
-        val = col.get_text(strip=True)  # Only include the VLAN ID if there is one
-        if val.isnumeric():
+        val = get_text_of(row, "td", {"class": "ui_VLAN"})
+        if val.isnumeric():  # Only include the VLAN ID if there is one
             repr["vlan"] = int(val)
 
-        col = row.find("td", {"class": "ui_WebServer"})
-        assert isinstance(col, Tag)
-        repr["webserver"] = col.get_text(strip=True) == "Yes"
+        repr["webserver"] = get_text_of(row, "td", {"class": "ui_WebServer"}) == "Yes"
 
         return alias, repr, "odd" in row.attrs["class"]
 
@@ -125,7 +99,7 @@ def get_addresses(
 
     # Process the results. Bridged interfaces will all be either even or odd if they belong to the same bridge
     addresses = {}
-    bridges = {}
+    bridges: dict[str, list] = {}
     prev_o = True
     prev_a = ""
 

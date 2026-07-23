@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -24,27 +26,19 @@ def parse_sys_stat(table: Tag, data: dict[str, Any]):
         "firewall_rules": "firewallRules",
     }
 
-    result = {}
-
-    for row in ROWS:
-        x = table.find("td", {"id": ROWS[row]})
-        assert isinstance(x, Tag)
-
-        result[row] = x.get_text("", True)
-
-    data["system_statistics"] = result
+    data["system_statistics"] = {
+        row: get_text_of(table, "td", {"id": ROWS[row]}) for row in ROWS
+    }
 
 
 def parse_led_indicators(table: Tag, data: dict[str, Any]):
-    cells = table.find_all("td")
+    cells = find_tags(table, "td")
 
     result = {}
 
     for cell in cells:
-        assert isinstance(cell, Tag)
         txt = cell.get_text("", True).lower()
-        img = cell.find("img")
-        assert isinstance(img, Tag)
+        img = find_tag_f(cell, "img")
 
         imgsrc = str(img.get("src"))
         if "led_red.png" in imgsrc:
@@ -58,20 +52,16 @@ def parse_led_indicators(table: Tag, data: dict[str, Any]):
 
 
 def parse_network_stats(table: Tag, data: dict[str, Any]):
-    tables = table.find_all("table")
+    tables = find_tags(table, "table")
 
     nics = tables[0]
-    assert isinstance(nics, Tag)
     iscx = tables[1]
-    assert isinstance(iscx, Tag)
 
     # Do not do this if network settings failed to parse
     if "network" in data:
         logger.info("Parsing Ethernet Stats")
-        nic_rows = nics.find_all("tr")
+        nic_rows = find_tags(nics, "tr")
         for row in nic_rows[1:]:
-            assert isinstance(row, Tag)
-
             row_text = row.get_text(";", True).split(";")
             name = row_text[0]
             bin = int(row_text[2].split(" ")[0])
@@ -88,11 +78,9 @@ def parse_network_stats(table: Tag, data: dict[str, Any]):
     if "ipsec" in data:
         logger.info("Parsing IPsec Stats")
         data["ipsec"]["stats"] = {}
-        icsx_rows = iscx.find_all("tr")
+        icsx_rows = find_tags(iscx, "tr")
 
         for row in icsx_rows[1:]:
-            assert isinstance(row, Tag)
-
             text = row.get_text("\n", True).splitlines()
             name = text[0]
             state = text[1]
@@ -113,14 +101,9 @@ def parse_version_information(table: Tag, data: dict[str, Any]):
         "fid": "fid",
     }
 
-    result = {}
-
-    for row in ROWS:
-        x = table.find("td", {"id": ROWS[row]})
-        assert isinstance(x, Tag)
-        result[row] = x.get_text("", True)
-
-    data["version_information"] = result
+    data["version_information"] = {
+        row: get_text_of(table, "td", {"id": ROWS[row]}) for row in ROWS
+    }
 
 
 # Tables, by the first caption in that table
@@ -133,16 +116,12 @@ PARSERS = {
 
 
 def parse_index(soup: BeautifulSoup, data: dict[str, Any]):
-    dashboard = soup.find("div", {"id": "dashBoard"})
-    assert isinstance(dashboard, Tag)
+    dashboard = find_tag_f(soup, "div", {"id": "dashBoard"})
 
-    tables = dashboard.find_all("table", recursive=False)
+    tables = find_tags(dashboard, "table", recursive=False)
 
     for table in tables:
-        assert isinstance(table, Tag)
-        caption = table.find("caption")
-        assert isinstance(caption, Tag)
-        caption = caption.get_text("", True)
+        caption = get_text_of(table, "caption")
 
         if caption not in PARSERS:
             continue

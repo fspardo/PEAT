@@ -10,6 +10,8 @@ from typing import Any
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from .helper import *
+
 from peat import DeviceData
 
 
@@ -17,13 +19,9 @@ def get_field(form: Tag, id: str) -> str | bool:
     """
     Get a field from a form
     """
-    tag = form.find("input", {"id": id, "name": id})
-    if not isinstance(tag, Tag):
-        raise Exception(f"Could not find form field {id}")
+    tag = find_tag_f(form, "input", {"id": id, "name": id})
 
-    result = tag.get("value")
-    if not isinstance(result, str):
-        raise Exception("Bad type")
+    result = get_value(tag)
 
     if tag.get("type") == "checkbox":
         result = result == "true"
@@ -63,9 +61,7 @@ def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
     """
     result = {}
 
-    form = soup.find("table", {"class": "formLayout"})
-    if not isinstance(form, Tag):
-        raise Exception("Failed to find update form")
+    form = find_table(soup, {"class": "formLayout"})
 
     for field in USER_FORM_FIELDS:
         id = USER_FORM_FIELDS[field]
@@ -76,18 +72,14 @@ def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
 
         result[field] = "N/A" if data == "" else data
 
-    table = soup.find("table", {"id": "localUser"})
-    if not isinstance(table, Tag):
-        raise Exception("Failed to find user list")
+    table = find_table(soup, {"id": "localUser"})
 
-    row = table.find("tr", {"id": result["username"]})
-    if not isinstance(row, Tag):
-        raise Exception(f"Failed to find row corresponding to {result['username']}")
+    row = find_tag_f(table, "tr", {"id": result["username"]})
 
     for field in USER_TABLE_FIELDS:
-        id = USER_TABLE_FIELDS[field]
-        time = row.find("div", {"class": id})
-        result[field] = "N/A" if not isinstance(time, Tag) else time.get_text(strip=True)
+        result[field] = (
+            get_text_of(row, "div", {"class": USER_TABLE_FIELDS[field]}) or "N/A"
+        )
 
     return {result["username"]: result}
 
