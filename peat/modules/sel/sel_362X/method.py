@@ -54,30 +54,37 @@ class Method:
     handler: FunctionType
     attempts: int
     for_device: list[str]
-    for_firmware: AdvancedRange
+    for_firmware: AdvancedRange | int
 
     def __init__(
         self,
         handler: FunctionType,
         attempts: int = 3,
         for_device: list[str] = [],
-        for_firmware: AdvancedRange = AdvancedRange(),
+        for_firmware: AdvancedRange | int = AdvancedRange(),
     ):
         self.handler = handler
         self.attempts = attempts
         self.for_device = for_device
         self.for_firmware = for_firmware
 
+    def dev_compat(self, dev: str) -> bool:
+        """Check for device compatibility"""
+        return len(self.for_device) == 0 or dev in self.for_device
+
+    def firmware_compat(self, fw: int) -> bool:
+        """Check for firmware compatibility"""
+        return (
+            fw in self.for_firmware
+            if isinstance(self.for_firmware, AdvancedRange)
+            else fw == self.for_firmware
+        )
+
     def iscompat(self, dev: DeviceData) -> bool:
-        device = dev._cache["DEVICE"]
-        firmware = dev._cache["VERSION"]
-
-        if len(self.for_device) > 0 and device not in self.for_device:
-            return False
-        elif firmware not in self.for_firmware:
-            return False
-
-        return True
+        """Check for compatibility"""
+        return self.dev_compat(dev._cache["DEVICE"]) and self.firmware_compat(
+            dev._cache["VERSION"]
+        )
 
     def handle(self, dev: DeviceData, session: HTTP362X) -> dict[str, Any] | None:
         if not self.iscompat(dev):
