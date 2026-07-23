@@ -23,6 +23,8 @@ None yet after open-sourcing!
 Releases
 ========
 
+- Added support for pulling and parsing configuration data for the SEL-3622 Security Gateway (Tested for Firmware R200)
+
 .. towncrier release notes start
 
 v2026.6.25 (2026-06-25)
