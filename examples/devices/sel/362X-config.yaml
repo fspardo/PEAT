@@ -1,0 +1,23 @@
+metadata:
+  name: "3622-test-config"
+  description: "Configuration file for the SEL-3622 used for testing"
+  author: "fsantan"
+  created: "July 16th, 2026"
+  updated: "July 23rd, 2026"
+
+device_options:
+  web:
+    user: "admin"
+    pass: "Admin123!"
+    timeout: 30.0
+
+hosts:
+  - label: "SEL-3620"
+    comment: "SEL-3620 Security Gateway"
+    identifiers:
+      ip: "127.0.0.1"
+    peat_module: "sel-362x"
+    options:
+      https:
+        port: 10443
+        timeout: 30.0
