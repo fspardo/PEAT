@@ -14,7 +14,7 @@ from ..sel_http import SELHTTP, Response
 from .endpoints import AVAILABLE_ENDPOINTS, ENDPOINTS
 
 
-class HTTP3622(SELHTTP):
+class HTTP362X(SELHTTP):
     """
     Class specialization of `SELHTTP` for the SEL-3622.
     """
@@ -184,4 +184,4 @@ class HTTP3622(SELHTTP):
         return super().disconnect()
 
 
-__all__ = ["HTTP3622"]
+__all__ = ["HTTP362X"]

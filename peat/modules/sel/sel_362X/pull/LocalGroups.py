@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.LocalGroups import parse_settings
 
 
-def pull_local_groups(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_local_groups(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
 

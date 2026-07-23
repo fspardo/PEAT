@@ -10,7 +10,7 @@ from loguru import logger
 
 from peat import DeviceData
 
-from .http import HTTP3622
+from .http import HTTP362X
 
 
 class AdvancedRange:
@@ -79,7 +79,7 @@ class Method:
 
         return True
 
-    def handle(self, dev: DeviceData, session: HTTP3622) -> dict[str, Any] | None:
+    def handle(self, dev: DeviceData, session: HTTP362X) -> dict[str, Any] | None:
         if not self.iscompat(dev):
             return None
 

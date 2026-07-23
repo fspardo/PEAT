@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.IPsec import parse_connections
 
 
-def pull_connections(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_connections(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /IPsec.sel
 

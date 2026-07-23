@@ -10,11 +10,11 @@ from bs4.element import Tag
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.Users import parse_user_info
 
 
-def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, Any]:
+def pull_user_info(dev: DeviceData, session: HTTP362X, row: Tag) -> dict[str, Any]:
     """
     Pull extended user info
     """
@@ -43,7 +43,7 @@ def pull_user_info(dev: DeviceData, session: HTTP3622, row: Tag) -> dict[str, An
     return parse_user_info(dev, session.gen_soup(response.text))
 
 
-def pull_users(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_users(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull registered users
 

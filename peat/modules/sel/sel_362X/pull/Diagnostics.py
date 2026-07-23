@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.Diagnostics import parse_diagnostics
 
 
-def pull_diagnostics(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /Diagnostics.sel
 

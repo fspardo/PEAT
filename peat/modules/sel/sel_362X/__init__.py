@@ -9,7 +9,7 @@ from time import sleep
 
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
-from .http import HTTP3622
+from .http import HTTP362X
 from .method import AdvancedRange as AR
 from .method import Method
 from .pull import *
@@ -25,17 +25,17 @@ class SEL362X(DeviceModule):
     vendor_id = "SEL"
     vendor_name = "Schweitzer Engineering Laboratories"
     brand = "SEL"
-    module_aliases = ["sel-3622", "sel-3620", "sel-362x"]
+    module_aliases = ["sel-3622", "sel-3620", "sel-362x", "3622", "3620", "362x"]
     default_options = {"web": {"user": "admin", "pass": "Admin123!", "users": []}}
 
     @classmethod
-    def get_session(cls, dev: DeviceData) -> HTTP3622 | None:
+    def get_session(cls, dev: DeviceData) -> HTTP362X | None:
         """
         Get the session associated with the device
         """
         if "web_session" in dev._cache:
             session = dev._cache["web_session"]
-            assert isinstance(session, HTTP3622)
+            assert isinstance(session, HTTP362X)
             if session.is_logged_in():
                 return session
 
@@ -44,7 +44,7 @@ class SEL362X(DeviceModule):
 
         cls.log.debug(f"Verifying on port {port} with timeout {timeout}")
 
-        session = HTTP3622(dev.ip, port, timeout)
+        session = HTTP362X(dev.ip, port, timeout)
 
         user = None
         passwd = None
@@ -191,7 +191,7 @@ class SEL362X(DeviceModule):
         except Exception as e:
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
-        dev.write_file(pulled_config, "web_cfg.json") # Full web configuration
+        dev.write_file(pulled_config, "web_cfg.json")  # Full web configuration
         dev.write_file(used_methods, "attempted_methods.json")
         dev.related.files.add("web_cfg.json")
         cls.update_dev(dev)

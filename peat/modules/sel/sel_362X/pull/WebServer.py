@@ -13,11 +13,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.WebServer import parse_global_config, parse_listeners
 
 
-def pull_web_server_config(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_web_server_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /WebServer.sel or /ManagementInterface.sel
 

@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.SysLogReport import parse_logs
 
 
-def pull_syslog_report(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_syslog_report(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /SysLogReport.sel
 

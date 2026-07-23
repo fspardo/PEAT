@@ -12,7 +12,7 @@ from loguru import logger as log
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 
 
 def get_connection_rule(row: Tag) -> Literal["Forward", "Drop", "Reject"]:

@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.X509 import parse_certificates_advanced, parse_certificates_basic
 
 
-def pull_certificates(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_certificates(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /X509.sel
 

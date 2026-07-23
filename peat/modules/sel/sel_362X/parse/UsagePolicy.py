@@ -11,7 +11,7 @@ from bs4.element import Tag
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 
 
 def parse_usage_policy(soup: BeautifulSoup) -> str:

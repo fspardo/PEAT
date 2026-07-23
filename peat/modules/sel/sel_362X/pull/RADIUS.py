@@ -12,13 +12,13 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.RADIUS import parse_settings
 
 
 def pull_dictionary(
     dev: DeviceData,
-    session: HTTP3622,
+    session: HTTP362X,
     soup: BeautifulSoup,
 ) -> str | None:
     t = soup.find("input", {"name": "t"})
@@ -51,7 +51,7 @@ def pull_dictionary(
     return response.text
 
 
-def pull_radius_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_radius_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
 

@@ -15,7 +15,7 @@ from peat import log
 from peat.data.models import DeviceData
 
 from ..endpoints import ENDPOINTS
-from ..http import HTTP3622
+from ..http import HTTP362X
 
 # This is used in more places than one
 HASH_ID: Final[str] = "display_systemSettingsExportHash"
@@ -83,7 +83,7 @@ class SystemSettings:
     connection_directory_hash: str
 
 
-def pull_info(http: HTTP3622) -> dict[str, str] | None:
+def pull_info(http: HTTP362X) -> dict[str, str] | None:
     """
     Pulls several data points from the web page:
 
@@ -163,7 +163,7 @@ def pull_info(http: HTTP3622) -> dict[str, str] | None:
     }
 
 
-def pull_hash(http: HTTP3622) -> str | None:
+def pull_hash(http: HTTP362X) -> str | None:
     """
     Pulls the current hash of the last generated configuration file.
 
@@ -207,14 +207,14 @@ class SystemSettingsPoller:
     Handles queueing and polling the system settings file
     """
 
-    http: HTTP3622
+    http: HTTP362X
     old_hash: str
     token: str
     password: str
     current_version: str
     previous_version: str
 
-    def __init__(self, http: HTTP3622):
+    def __init__(self, http: HTTP362X):
         self.http = http
         self.old_hash = ""
         self.token = ""
@@ -337,7 +337,7 @@ class SystemSettingsPoller:
         )
 
 
-def initialize_file_management_pull(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
+def initialize_file_management_pull(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
     """
     Prepares the FileManagement pull. Returns an empty dictionary.
     """
@@ -350,7 +350,7 @@ def initialize_file_management_pull(dev: DeviceData, http: HTTP3622) -> dict[str
     return {}
 
 
-def pull_file_management(dev: DeviceData, http: HTTP3622) -> dict[str, Any]:
+def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
     """
     Pull data from the "/FileManagement.sel" endpoint.
 

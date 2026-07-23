@@ -13,11 +13,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.SNMP import parse_mibs, parse_settings
 
 
-def pull_snmp_mibs(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_snmp_mibs(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     logger.debug("Pulling SNMP MIBs...")
 
     response = session.get("SNMP_MIBs.sel")
@@ -53,7 +53,7 @@ def pull_snmp_mibs(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
     return parse_mibs(dev, "MIBS.zip")
 
 
-def pull_snmp_settings(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_snmp_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
 

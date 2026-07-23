@@ -12,11 +12,11 @@ from loguru import logger
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.index import parse_index
 
 
-def pull_index(dev: DeviceData, session: HTTP3622, data: dict[str, Any]):
+def pull_index(dev: DeviceData, session: HTTP362X, data: dict[str, Any]):
     """
     This works a bit differently. Some information is not available from the
     respective pages, while others are seemingly unique.

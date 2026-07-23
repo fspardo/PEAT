@@ -12,11 +12,11 @@ from loguru import logger as log
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.StaticRoutes import parse_static_routes
 
 
-def pull_static_routes(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_static_routes(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pulls data from the /StaticRoutes.sel endpoint
 

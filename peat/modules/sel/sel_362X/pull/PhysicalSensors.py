@@ -11,11 +11,11 @@ from bs4.element import Tag
 
 from peat import DeviceData
 
-from ..http import HTTP3622
+from ..http import HTTP362X
 from ..parse.PhysicalSensors import enabled, input_contact, light_sensor, motion_sensor
 
 
-def pull_physical_sensors(dev: DeviceData, session: HTTP3622) -> dict[str, Any]:
+def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration of the physical sensors page
 
