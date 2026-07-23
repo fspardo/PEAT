@@ -123,7 +123,7 @@ class SEL362X(DeviceModule):
             Method(pull_usage_policy, 3),
             Method(pull_web_server_config, 3),
             # pull_file_management [moved to the end]
-            Method(pull_physical_sensors, 3),
+            Method(pull_physical_sensors, 3, ["sel-3622"]),
             # User
             Method(pull_users, 3),
             Method(pull_ldap_settings, 3),
@@ -149,9 +149,7 @@ class SEL362X(DeviceModule):
             Method(pull_passwd_mgmt, 3),
             # Reports
             Method(pull_syslog_report, 3),
-            Method(
-                pull_diagnostics, 3, for_device=["SEL-3622"], for_firmware=AR(200, 200)
-            ),
+            Method(pull_diagnostics, 3, ["sel-3622"], 200),
             # File Management is last to allow for enough time to see an update to the configuration
             Method(pull_file_management, 1, for_firmware=AR(None, 200)),
         ]

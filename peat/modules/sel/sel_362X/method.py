@@ -65,12 +65,12 @@ class Method:
     ):
         self.handler = handler
         self.attempts = attempts
-        self.for_device = for_device
+        self.for_device = [d.lower() for d in for_device]
         self.for_firmware = for_firmware
 
     def dev_compat(self, dev: str) -> bool:
         """Check for device compatibility"""
-        return len(self.for_device) == 0 or dev in self.for_device
+        return len(self.for_device) == 0 or dev.lower() in self.for_device
 
     def firmware_compat(self, fw: int) -> bool:
         """Check for firmware compatibility"""
