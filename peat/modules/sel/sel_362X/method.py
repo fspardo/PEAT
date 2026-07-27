@@ -1,5 +1,7 @@
 """
 Code for handling methods
+
+Author: Francisco Santana
 """
 
 from dataclasses import dataclass

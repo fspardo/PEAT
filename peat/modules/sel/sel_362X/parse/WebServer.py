@@ -1,8 +1,8 @@
 """
 Parse data from /WebServer.sel.
 
-Authors: Nehal Mohamed Ameen <nmameen@sandia.gov>
-         Francisco Santana <fsantan@sandia.gov>
+Authors: Nehal Mohamed Ameen
+         Francisco Santana
 """
 
 from pathlib import Path

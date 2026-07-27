@@ -1,7 +1,7 @@
 """
 HTTP endpoints for the SEL-3622.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from typing import Literal

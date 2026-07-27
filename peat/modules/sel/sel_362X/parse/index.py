@@ -1,7 +1,7 @@
 """
 Parse data from /index.sel.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from pathlib import Path

@@ -1,8 +1,8 @@
 """
 Pull the device's web server configuration from /WebServer.sel.
 
-Authors: Nehal Mohamed Ameen <nmameen@sandia.gov>
-         Francisco Santana <fsantan@sandia.gov>
+Authors: Nehal Mohamed Ameen
+         Francisco Santana
 """
 
 from typing import Any, Literal

@@ -2,7 +2,7 @@
 SEL-362X Security Gateway.
 
 Authors:
-    - Francisco Santana <fsantan@sandia.gov>
+    - Francisco Santana
 """
 
 from time import sleep

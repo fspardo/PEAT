@@ -1,7 +1,7 @@
 """
 Parse data from /LocalGroups.sel.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from hashlib import sha256

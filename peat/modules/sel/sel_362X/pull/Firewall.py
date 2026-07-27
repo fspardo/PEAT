@@ -1,7 +1,7 @@
 """
 Pull the device's usage policy from /Firewall.sel
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from typing import Any

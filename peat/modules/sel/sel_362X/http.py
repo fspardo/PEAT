@@ -2,7 +2,7 @@
 SEL HTTP module specialized for the SEL-3622
 
 Authors:
-    - Francisco Santana <fsantan@sandia.gov>
+    - Francisco Santana
 """
 
 from urllib.parse import urljoin

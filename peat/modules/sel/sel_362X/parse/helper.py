@@ -1,7 +1,7 @@
 """
 Helper functions for parsing page content
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from bs4 import BeautifulSoup

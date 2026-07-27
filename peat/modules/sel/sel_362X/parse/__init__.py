@@ -16,7 +16,7 @@ The prototype of each function should be:
 Raise exceptions where the parse fails.
 
 Authors:
-    - Francisco Santana <fsantan@sandia.gov>
+    - Francisco Santana
 """
 
 # Sorting has been disabled to make imports match the ordering of the UI on the SEL

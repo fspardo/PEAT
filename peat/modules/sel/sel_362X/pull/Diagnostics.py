@@ -1,7 +1,7 @@
 """
 Extract data from the /Diagnostics.sel endpoint
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from typing import Any, Literal

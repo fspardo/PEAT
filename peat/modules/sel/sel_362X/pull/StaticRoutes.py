@@ -1,7 +1,7 @@
 """
 Get data from /StaticRoutes.sel.
 
-Author: Francisco Santana <fsantan@sandia.gov>
+Author: Francisco Santana
 """
 
 from typing import Any, Literal
