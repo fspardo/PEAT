@@ -38,15 +38,18 @@ def parse_led_indicators(table: Tag, data: dict[str, Any]):
 
     for cell in cells:
         txt = cell.get_text("", True).lower()
-        img = find_tag_f(cell, "img")
+        img = find_tag(cell, "img")
 
-        imgsrc = str(img.get("src"))
-        if "led_red.png" in imgsrc:
-            result[txt] = "red"
-        elif "led_green.png" in imgsrc:
-            result[txt] = "green"
-        else:
+        if not img:
             result[txt] = "unknown"
+        else:
+            imgsrc = str(img.get("src"))
+            if "led_red.png" in imgsrc:
+                result[txt] = "red"
+            elif "led_green.png" in imgsrc:
+                result[txt] = "green"
+            else:
+                result[txt] = "off"
 
     data["led_indicators"] = result
 

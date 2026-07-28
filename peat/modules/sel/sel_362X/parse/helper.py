@@ -31,7 +31,7 @@ def ptagattr(attr: dict[str, str | list[str]]) -> str:
 
 def find_tag(
     source: BeautifulSoup | Tag,
-    tagty: str,
+    tagty: str | None = None,
     attrib: dict[str, str | list[str]] = {},
     recursive: bool = True,
 ) -> Tag | None:
@@ -112,7 +112,7 @@ def get_table_rows(table: Tag, recurse: bool = False) -> list[Tag]:
 
 def get_text_of(
     source: Tag,
-    tag: str,
+    tag: str | None = None,
     attrib: dict[str, str | list[str]] = {},
     sep: str = "\n",
     strip: bool = True,

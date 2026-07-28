@@ -37,7 +37,17 @@ def parse_profiles(soup: BeautifulSoup) -> dict[str, Any]:
         entry = {}
 
         for c in COLUMNS:
-            entry[c] = get_text_of(e, "td", {"class": COLUMNS[c]})
+            value = get_text_of(e, attrib={"class": COLUMNS[c]})
+
+            if c == "baud_rate":
+                if value.endswith("*"):
+                    value = value.strip("*")
+                    entry["intercharacter_delay"] = "on"
+                else:
+                    entry["intercharacter_delay"] = "off"
+                pass
+
+            entry[c] = value
 
         name = entry["name"]
         del entry["name"]
