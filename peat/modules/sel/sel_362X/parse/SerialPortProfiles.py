@@ -30,7 +30,7 @@ COLUMNS = {
 def parse_profiles(soup: BeautifulSoup) -> dict[str, Any]:
     result = {}
 
-    table = find_table(soup, {"id": "serialPorts"})
+    table = find_table(soup, {"id": ["serialPorts", "byteBasedSerialPorts"]})
     entries = get_table_rows(table)
 
     for e in entries:

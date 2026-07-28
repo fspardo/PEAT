@@ -19,7 +19,7 @@ from peat import DeviceData
 def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     table = find_table(soup, {"id": "local_groups"})
 
-    rows = get_table_rows(find_tag_f(table, "tbody"), False)
+    rows = get_table_rows(table, False)
 
     result = {get_attrib_f(row, "id"): [] for row in rows}
 
