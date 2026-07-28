@@ -135,6 +135,7 @@ class SEL362X(DeviceModule):
             # TODO: pull NAT
             Method(pull_syslog_settings, 3),
             Method(pull_firewall_rules, 3),
+            Method(pull_nat_config, 3, [], AR(212)),
             Method(pull_hosts, 3),
             Method(pull_snmp_settings, 3),
             # Serial Ports
