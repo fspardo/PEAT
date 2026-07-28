@@ -33,4 +33,6 @@ def parse_global_config(table: Tag | BeautifulSoup) -> dict[str, Any]:
 def parse_nat_config(soup: BeautifulSoup) -> dict[str, Any]:
     result = parse_global_config(soup)
 
+    # TODO: Find a way to populate the NAT table
+
     return result

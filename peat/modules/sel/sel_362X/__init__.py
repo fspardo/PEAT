@@ -132,7 +132,6 @@ class SEL362X(DeviceModule):
             # Network
             Method(pull_network_settings, 3),
             Method(pull_static_routes, 3),
-            # TODO: pull NAT
             Method(pull_syslog_settings, 3),
             Method(pull_firewall_rules, 3),
             Method(pull_nat_config, 3, [], AR(212)),
