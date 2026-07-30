@@ -14,6 +14,8 @@ from peat import DeviceData
 from ..http import HTTP362X
 from ..parse.PhysicalSensors import enabled, input_contact, light_sensor, motion_sensor
 
+from loguru import logger
+
 
 def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
@@ -32,9 +34,21 @@ def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
 
     soup = session.gen_soup(response.text)
 
-    result["enabled"] = enabled(soup)
-    result["input_contact"] = input_contact(soup)
-    result["light"] = light_sensor(soup)
-    result["motion"] = motion_sensor(soup)
+    try:
+        result["enabled"] = enabled(soup)
+    except Exception as e:
+        logger.warning("Failed to get global status")
+    try:
+        result["input_contact"] = input_contact(soup)
+    except Exception as e:
+        logger.warning("Failed to get input contact status")
+    try:
+        result["light"] = light_sensor(soup)
+    except Exception as e:
+        logger.warning("Failed to get ligt sensor status")
+    try:
+        result["motion"] = motion_sensor(soup)
+    except Exception as e:
+        logger.warning("Failed to get motion sensor status")
 
     return {"sensors": result}

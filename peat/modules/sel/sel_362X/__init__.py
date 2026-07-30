@@ -123,7 +123,7 @@ class SEL362X(DeviceModule):
             Method(pull_usage_policy, 3),
             Method(pull_web_server_config, 3),
             # pull_file_management [moved to the end]
-            Method(pull_physical_sensors, 3, ["sel-3622"]),
+            Method(pull_physical_sensors, 3),
             # User
             Method(pull_users, 3),
             Method(pull_ldap_settings, 3),
