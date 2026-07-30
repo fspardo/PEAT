@@ -13,8 +13,8 @@ from loguru import logger
 from peat import DeviceData
 
 from ..http import HTTP362X
-from ..parse.Diagnostics import parse_diagnostics_R200, parse_diagnostics_R212
 from ..method import AdvancedRange as AR
+from ..parse.Diagnostics import parse_diagnostics_R200, parse_diagnostics_R212
 
 
 def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:

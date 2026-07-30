@@ -8,13 +8,12 @@ from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+from loguru import logger
 
 from peat import DeviceData
 
 from ..http import HTTP362X
 from ..parse.PhysicalSensors import enabled, input_contact, light_sensor, motion_sensor
-
-from loguru import logger
 
 
 def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
