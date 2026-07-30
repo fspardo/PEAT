@@ -1,8 +1,12 @@
 """
-SEL-362X Security Gateway.
+SEL-362X Family of Security Gateways.
+
+This module is designed to support both the SEL-3622 and the SEL-3620, though
+was originally developed for the former.
 
 Authors:
     - Francisco Santana
+    - Nehal Ameen
 """
 
 from time import sleep
