@@ -321,7 +321,15 @@ def parse_diagnostics(
     fields: list[str],
     parsers: list[FunctionType],
 ) -> dict[str, Any]:
-    """Generic parser"""
+    """
+    Generic parser
+
+    PARAMETERS:
+        - soup    -> BeautifulSoup object encapsulating the page
+        - headers -> List of strings representing the headers to be scanned for
+        - fields  -> List of fields to store the parsed results to
+        - parsers -> List of parsers for use in parsing diagnostics output
+    """
     result = {}
 
     pre = soup.find("pre", {"id": "diagnosticsText"})
@@ -330,21 +338,23 @@ def parse_diagnostics(
 
     result["pulled"] = " ".join(pre[0].split(" ")[1:]).strip("()")
 
-    cur = 0
-    begin = 0
-    header = -1
-    p = -2
+    cur = 0  #  Cursor position
+    begin = 0  # First line for next parser
+    header = -1  # Header to look for
+    p = -2  # Parser to execute
 
     while header < len(headers):
+        # Increment parser and header, set begin to next
         p += 1
         header += 1
         begin = cur + 1
 
         if header == len(headers):
-            cur = len(pre)
+            cur = len(pre)  # Set cursor to end
         else:
             logger.debug(f"Finding header {headers[header]}")
 
+            # Search for header in each line
             while cur < len(pre) and pre[cur] != headers[header]:
                 cur += 1
 
@@ -353,7 +363,7 @@ def parse_diagnostics(
 
         logger.debug(f"Parsing {fields[p]} with {parsers[p].__name__}")
 
-        try:
+        try:  # Try to parse; try-except to prevent outright failure
             result[fields[p]] = parsers[p](pre[begin : cur - 1])
         except Exception as e:
             logger.warning(f"Failed to parse with {parsers[p].__name__}")
