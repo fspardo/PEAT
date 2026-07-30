@@ -353,21 +353,6 @@ def initialize_file_management_pull(dev: DeviceData, http: HTTP362X) -> dict[str
 def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
     """
     Pull data from the "/FileManagement.sel" endpoint.
-
-    Will pull and provide the following data:
-
-    | Field                                       | Description                                                            |
-    |---------------------------------------------|------------------------------------------------------------------------|
-    | `system_settings_backup.last_uploaded_hash` | The hash of the last uploaded backup configuration file.               |
-    | `system_settings_backup.old_hash`           | The hash of the previously-generated backup.                           |
-    | `system_settings_backup.new_hash`           | The hash of the newly-generated backup.                                |
-    | `system_settings_backup.file_name`          | The name of the backup file.                                           |
-    | `system_settings_backup.config_archive`     | The configuration backup file.                                         |
-    | `system_settings_backup.password`           | The time at which this file was pulled.                                |
-    | `system_settings_backup.time_pulled`        | The password used to encrypt this file.                                |
-    | `firmware.current_version`                  | The current version of the firmware.                                   |
-    | `firmware.previous_version`                 | The previous version of the firmware.                                  |
-    | `connection_directory_config_hash`          | The hash of the last uploaded Connection Directory configuration file. |
     """
 
     ssp = dev._cache[SystemSettingsPoller]

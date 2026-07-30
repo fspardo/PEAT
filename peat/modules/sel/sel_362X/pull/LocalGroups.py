@@ -19,11 +19,6 @@ from ..parse.LocalGroups import parse_settings
 def pull_local_groups(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /LDAP.sel
-
-    | Field                  | Description                                                             |
-    |------------------------|-------------------------------------------------------------------------|
-    | `local_groups`         | Root container                                                          |
-    | `local_groups.[group]` | Each group is an object in a dictionary, assigned an array of usernames |
     """
 
     logger.debug("Pulling page...")

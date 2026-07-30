@@ -19,16 +19,6 @@ from ..parse.PortMappings import parse_mappings
 def pull_port_mappings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /PortMappings.sel
-
-    | Field                                         | Description                                                         |
-    |-----------------------------------------------|---------------------------------------------------------------------|
-    | `port_mappings`                               | Root container                                                      |
-    | `port_mappings.[name]`                        | Contains configuration data for a mapping of that name              |
-    | `port_mappings.[name].alias`                  | The name of the interface or listener used for this connection      |
-    | `port_mappings.[name].device`                 | The type of the device (Serial or Ethernet)                         |
-    | `port_mappings.[name].proto`                  | The name of the protocol used for the communication                 |
-    | `port_mappings.[name].stats`                  | Statistics for the port, if available                               |
-    | `port_mappings.[name].listen`                 | The listening address of the port, if available                     |
     """
 
     logger.debug("Pulling page...")

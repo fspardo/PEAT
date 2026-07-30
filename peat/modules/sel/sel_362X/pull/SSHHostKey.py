@@ -19,12 +19,6 @@ from ..parse.SSHHostKey import parse_host_keys
 def pull_host_keys(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /SSH_Host_Key.sel
-
-    | Field                  | Description                     |
-    |------------------------|---------------------------------|
-    | `host_keys`            | Root container                  |
-    | `host_keys.dsa_pubkey` | The DSA public key for the host |
-    | `host_keys.rsa_pubkey` | The RSA public key for the host |
     """
 
     logger.debug("Pulling page...")

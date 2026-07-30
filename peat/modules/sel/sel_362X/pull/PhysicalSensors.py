@@ -18,14 +18,6 @@ from ..parse.PhysicalSensors import enabled, input_contact, light_sensor, motion
 def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration of the physical sensors page
-
-    | Field                   | Description                                          |
-    |-------------------------|------------------------------------------------------|
-    | `sensors.enabled`       | Whether the sensors are enabled                      |
-    | `sensors.input_contact` | Whether the Input Contact sensor is enabled          |
-    | `sensors.light`         | Whether the Light sensor is enabled                  |
-    | `sensors.motion`        | Whether the Motion sensor (accelerometer) is enabled |
-
     """
 
     result = {}

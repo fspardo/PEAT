@@ -17,11 +17,6 @@ from ..parse.UsagePolicy import parse_usage_policy
 def pull_usage_policy(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull from the /UsagePolicy.sel endpoint
-
-    | Field          | Description                                                               |
-    |----------------|---------------------------------------------------------------------------|
-    | `usage_policy` | Contains the text of the usage policy (which appears in the login screen) |
-
     """
     response = session.get_endpoint("usage_policy")
 

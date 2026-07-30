@@ -19,17 +19,6 @@ from ..parse.SerialPortProfiles import parse_profiles
 def pull_serial_port_profiles(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /SerialPortProfiles.sel
-
-    | Field                                         | Description                                                         |
-    |-----------------------------------------------|---------------------------------------------------------------------|
-    | `serial_port_profiles`                        | Root container                                                      |
-    | `serial_port_profiles.[name]`                 | The name of the serial port profile                                 |
-    | `serial_port_profiles.[name].baud_rate`       | The rate at which data is transmitted                               |
-    | `serial_port_profiles.[name].data_bits`       | Unit of size for data                                               |
-    | `serial_port_profiles.[name].parity`          | Parity algorithm (ECC)                                              |
-    | `serial_port_profiles.[name].hw_flow_control` | Whether to use hardware flow control                                |
-    | `serial_port_profiles.[name].interface`       | The interface to use for communicating                              |
-    | `serial_port_profiles.[name].frame_size`      | The maximum size for a single frame of data                         |
     """
 
     logger.debug("Pulling page...")

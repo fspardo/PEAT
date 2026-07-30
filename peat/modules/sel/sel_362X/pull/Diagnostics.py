@@ -19,27 +19,6 @@ from ..parse.Diagnostics import parse_diagnostics_3622_R200
 def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /Diagnostics.sel
-
-    | Field                                 | Description                    |
-    |---------------------------------------|--------------------------------|
-    | `diagnostics`                         | Root container                 |
-    | `diagnostics.firewall_state`          | Firewall state information     |
-    | `diagnostics.network_state`           | Network adapter configuration  |
-    | `diagnostics.route_table_state`       | Route table information        |
-    | `diagnostics.hard_drive_usage`        | Hard drive usage               |
-    | `diagnostics.process_list`            | Process list                   |
-    | `diagnostics.available_entropy`       | Entropy                        |
-    | `diagnostics.ipsec_config`            | IPsec config file              |
-    | `diagnostics.ipsec_state`             | IPsec state                    |
-    | `diagnostics.ipsec_policy`            | IPsec policy                   |
-    | `diagnostics.ipsec_status`            | IPsec status                   |
-    | `diagnostics.ipsec_total`             | IPsec statistics               |
-    | `diagnostics.free_memory`             | Memory information             |
-    | `diagnostics.hardware_offload_events` | Hardware offloads              |
-    | `diagnostics.selinux_audit_failures`  | Audit failures                 |
-    | `diagnostics.selinux`                 | SELinux status                 |
-    | `diagnostics.autoscopy_status`        | Autoscopy status               |
-    | `diagnostics.whitelist`               | Whitelist status               |
     """
 
     response = session.get_endpoint("diagnostics")

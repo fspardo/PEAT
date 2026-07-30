@@ -19,12 +19,6 @@ from ..parse.Hosts import parse_settings
 def pull_hosts(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /Hosts.sel
-
-    | Field              | Description                    |
-    |--------------------|--------------------------------|
-    | `hosts`            | Root container                 |
-    | `hosts.[hostname]` | Mapping of hostname to address |
-
     """
 
     response = session.get_endpoint("hosts")

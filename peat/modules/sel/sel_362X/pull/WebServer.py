@@ -20,16 +20,6 @@ from ..parse.WebServer import parse_global_config, parse_listeners
 def pull_web_server_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /WebServer.sel or /ManagementInterface.sel
-
-    | Field                                         | Description                                                         |
-    |-----------------------------------------------|---------------------------------------------------------------------|
-    | `web_server`                                  | Root container                                                      |
-    | `web_server.port`                             | Port number for web server                                          |
-    | `web_server.session_timeout`                  | How long, in minutes, before a session is timed out                 |
-    | `web_server.certificate`                      | The certificate used to create and maintain SSL connections         |
-    | `web_server.listeners`                        | List of listeners for the web server                                |
-    | `web_server.listeners.[alias].ip`             | IP Address                                                          |
-    | `web_server.listeners.[alias].vlan_id`        | VLAN ID                                                             |
     """
 
     logger.debug("Pulling page...")
