@@ -4,6 +4,10 @@ Get data from /FileManagement.sel.
 Author: Francisco Santana
 """
 
+# TODO: This needs to be updated to better support the SEL-3620 or R212 of the firmware.
+# I've encountered several issues attempting to interact with the device generally, which
+# made it impossible to properly test this against it.
+
 from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timezone
