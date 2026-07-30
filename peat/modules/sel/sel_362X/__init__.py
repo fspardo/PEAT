@@ -160,35 +160,41 @@ class SEL362X(DeviceModule):
 
         for method in methods:
             tried_methods += 1
+            # Informational output
             cls.log.info(
                 f'({tried_methods}/{len(methods)}) Attempting method "{method.handler.__name__}" for {dev.ip}:{port}'
             )
 
             try:
+                # Call the method (`.handle()` checks for compatibility)
                 result = method.handle(dev, session)
-                if result is None:
+                if result is None:  # None indicates incompatibility
                     cls.log.info("Method was not compatible")
                     used_methods[method.handler.__name__] = "NOT COMPAT"
                     continue
 
-                for k in result:
+                for k in result:  # Check root keys for duplicates
                     if k in pulled_config:
                         cls.log.warning(
                             f"Key {k} is already present from a previous pull; overwriting..."
                         )
+                # Report OK and update pulled config
                 used_methods[method.handler.__name__] = "OK"
                 pulled_config.update(result)
                 cls.log.info("Successfully used method")
                 sleep(1)
             except Exception as e:
+                # Report error and mark not OK
                 cls.log.exception(f"Exception caught: {e}")
                 used_methods[method.handler.__name__] = "NOT OK"
 
         try:
+            # Pull the index page to add extra data
             pull_index(dev, session, pulled_config)
         except Exception as e:
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
+        # Write relevant files
         dev.write_file(pulled_config, "web_cfg.json")  # Full web configuration
         dev.write_file(used_methods, "attempted_methods.json")
         dev.related.files.add("web_cfg.json")
