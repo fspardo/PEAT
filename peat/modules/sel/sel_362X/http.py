@@ -65,7 +65,7 @@ class HTTP362X(SELHTTP):
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
-        
+
         Newer firmware appears to submit a token matching a cookie stored in
         the browser on first connection.
         """

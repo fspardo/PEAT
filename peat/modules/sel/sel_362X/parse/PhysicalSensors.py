@@ -9,14 +9,12 @@ from typing import Any, Literal
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from .helper import *
-
 from peat import DeviceData
 
+from .helper import *
 
-def get_input_value(
-    s: BeautifulSoup, type: Literal["checkbox", "text"], id: str
-) -> str:
+
+def get_input_value(s: BeautifulSoup, type: Literal["checkbox", "text"], id: str) -> str:
     """
     Get the value of an input field based on its type and ID.
     """
@@ -27,9 +25,7 @@ def get_radio_value(s: BeautifulSoup, name: str) -> str:
     """
     Get the value of a radio field based on its name
     """
-    return get_value(
-        find_tag_f(s, "input", {"type": "radio", "name": name, "checked": ""})
-    )
+    return get_value(find_tag_f(s, "input", {"type": "radio", "name": name, "checked": ""}))
 
 
 def enabled(s: BeautifulSoup) -> str:

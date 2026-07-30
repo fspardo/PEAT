@@ -5,7 +5,7 @@ Author: Francisco Santana
 """
 
 from bs4 import BeautifulSoup
-from bs4.element import Tag, ResultSet
+from bs4.element import ResultSet, Tag
 
 
 def ptagattr(attr: dict[str, str | list[str]]) -> str:

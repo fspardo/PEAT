@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 SETTINGS_TABLE_CHECKBOXES: Final[dict[str, str]] = {
     "enabled": "radius_auth",
@@ -64,9 +64,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     for checkbox in SETTINGS_TABLE_CHECKBOXES:
         result[checkbox] = (
             get_attrib(
-                find_tag_f(
-                    table, "input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]}
-                ),
+                find_tag_f(table, "input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]}),
                 "checked",
             )
             == "checked"

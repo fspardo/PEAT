@@ -9,11 +9,10 @@ from typing import Any
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from .helper import *
-
 from peat import DeviceData
 
 from ..http import HTTP362X
+from .helper import *
 
 
 def parse_usage_policy(soup: BeautifulSoup) -> str:

@@ -15,11 +15,12 @@ from peat import DeviceData
 from ..http import HTTP362X
 from ..parse.NAT import parse_nat_config
 
+
 def pull_nat_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
-    Pull the device's NAT config    
+    Pull the device's NAT config
     """
-    
+
     logger.debug("Pulling page...")
     response = session.get_endpoint("nat")
 

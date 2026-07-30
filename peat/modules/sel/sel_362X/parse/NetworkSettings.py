@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def get_global_cfg(
@@ -68,7 +68,7 @@ def get_addresses(
     """
     Retrieve network addresses and bridges
 
-    The first element of the tuple is a dictionary of configuration data, while the other is 
+    The first element of the tuple is a dictionary of configuration data, while the other is
     """
     table = find_table(soup, {"id": "EthernetAddress"})
     entries = get_table_rows(table)

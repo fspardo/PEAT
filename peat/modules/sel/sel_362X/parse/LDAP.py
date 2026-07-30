@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 GLOBAL_SETTINGS_NAME = "LDAPSettingsTable"
 GLOBAL_SETTINGS = {
@@ -50,8 +50,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
 
     logger.debug("/// Parsing global settings...")
     result["config"] = {
-        key: get_text_of(table, "td", {"id": GLOBAL_SETTINGS[key]})
-        for key in GLOBAL_SETTINGS
+        key: get_text_of(table, "td", {"id": GLOBAL_SETTINGS[key]}) for key in GLOBAL_SETTINGS
     }
 
     table = find_table(soup, {"id": LDAP_SERVER_LIST_NAME})
@@ -83,10 +82,7 @@ def parse_settings(soup: BeautifulSoup) -> dict[str, Any]:
     groupmaps = {}
     logger.debug("/// Parsing group mappings...")
     for row in list:
-        r = {
-            key: get_text_of(row, "td", {"id": GROUP_MAPPINGS[key]})
-            for key in GROUP_MAPPINGS
-        }
+        r = {key: get_text_of(row, "td", {"id": GROUP_MAPPINGS[key]}) for key in GROUP_MAPPINGS}
 
         if r["role"] not in groupmaps:
             groupmaps[r["role"]] = []

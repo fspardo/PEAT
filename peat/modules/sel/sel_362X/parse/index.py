@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def parse_sys_stat(table: Tag, data: dict[str, Any]):
@@ -26,9 +26,7 @@ def parse_sys_stat(table: Tag, data: dict[str, Any]):
         "firewall_rules": "firewallRules",
     }
 
-    data["system_statistics"] = {
-        row: get_text_of(table, "td", {"id": ROWS[row]}) for row in ROWS
-    }
+    data["system_statistics"] = {row: get_text_of(table, "td", {"id": ROWS[row]}) for row in ROWS}
 
 
 def parse_led_indicators(table: Tag, data: dict[str, Any]):

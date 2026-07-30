@@ -12,9 +12,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def get_txt_input_value(soup: BeautifulSoup | Tag, eid: str) -> str:
@@ -60,12 +60,8 @@ def parse_global_config(soup: BeautifulSoup) -> dict[str, Any]:
 
     if element_exists(table, "input", "ServicePortEnabled"):
         result["service_port"] = {}
-        result["service_port"]["enabled"] = get_checkbox_value(
-            table, "ServicePortEnabled"
-        )
-        result["service_port"]["port"] = int(
-            get_txt_input_value(table, "ServicePortNumber")
-        )
+        result["service_port"]["enabled"] = get_checkbox_value(table, "ServicePortEnabled")
+        result["service_port"]["port"] = int(get_txt_input_value(table, "ServicePortNumber"))
 
     return result
 

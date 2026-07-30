@@ -5,16 +5,16 @@ Author: Francisco Santana
 """
 
 from pathlib import Path
-from typing import Any
 from re import split
+from typing import Any
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def parse_global_config(table: Tag | BeautifulSoup) -> dict[str, Any]:

@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from loguru import logger as log
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def get_connection_rule(row: Tag) -> Literal["Forward", "Drop", "Reject"]:
@@ -71,8 +71,6 @@ def parse_static_routes(soup: BeautifulSoup) -> dict[str, Any]:
     return {
         id: data
         for id, data in extract_rows(
-            get_table_rows(
-                find_table(soup, {"id": "staticRoute", "class": "fieldList"})
-            )
+            get_table_rows(find_table(soup, {"id": "staticRoute", "class": "fieldList"}))
         )
     }

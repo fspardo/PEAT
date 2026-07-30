@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from loguru import logger
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 BASIC_DATA = {
     "name": "name",
@@ -71,10 +71,7 @@ def parse_certificates_basic(soup: BeautifulSoup) -> dict[str, Any]:
     rows = get_table_rows(table)
 
     for row in rows:
-        x = {
-            k: get_text_of(row, "td", {"class": f"x509_{BASIC_DATA[k]}"})
-            for k in BASIC_DATA
-        }
+        x = {k: get_text_of(row, "td", {"class": f"x509_{BASIC_DATA[k]}"}) for k in BASIC_DATA}
 
         name = x["name"]
         del x["name"]

@@ -10,9 +10,9 @@ from typing import Any
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from .helper import *
-
 from peat import DeviceData
+
+from .helper import *
 
 
 def get_field(form: Tag, id: str) -> str | bool:
@@ -77,9 +77,7 @@ def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
     row = find_tag_f(table, "tr", {"id": result["username"]})
 
     for field in USER_TABLE_FIELDS:
-        result[field] = (
-            get_text_of(row, "div", {"class": USER_TABLE_FIELDS[field]}) or "N/A"
-        )
+        result[field] = get_text_of(row, "div", {"class": USER_TABLE_FIELDS[field]}) or "N/A"
 
     return {result["username"]: result}
 
