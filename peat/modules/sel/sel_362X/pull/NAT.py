@@ -16,7 +16,9 @@ from ..http import HTTP362X
 from ..parse.NAT import parse_nat_config
 
 def pull_nat_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
-    """Pull the device's NAT config"""
+    """
+    Pull the device's NAT config    
+    """
     
     logger.debug("Pulling page...")
     response = session.get_endpoint("nat")
@@ -29,4 +31,4 @@ def pull_nat_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
         raise Exception(f"Redirected to {response.history[-1].url}")
 
     logger.debug("Parsing page...")
-    return {"local_groups": parse_nat_config(session.gen_soup(response.text))}
+    return {"NAT": parse_nat_config(session.gen_soup(response.text))}
