@@ -13,10 +13,104 @@ from time import sleep
 
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
-from .http import HTTP362X
-from .method import AdvancedRange as AR
-from .method import Method
-from .pull import *
+from .sel362x_http import HTTP362X
+
+from types import FunctionType
+from typing import Any
+
+
+class AdvancedRange:
+    """An inclusive range type for versioning."""
+
+    low: int | None
+    high: int | None
+
+    def __init__(self, low: int | None = None, high: int | None = None):
+        self.low = low
+        self.high = high
+
+    def __contains__(self, value: int) -> bool:
+        result = True
+
+        if self.low:
+            result = value >= self.low
+        if self.high and result:
+            result = self.high >= value
+
+        return result
+
+    def __str__(self) -> str:
+        if self.low and self.high:
+            return f"{self.low} - {self.high}"
+        elif self.low:
+            return f">= {self.low}"
+        elif self.high:
+            return f"<= {self.high}"
+        else:
+            return "any"
+
+
+AR = AdvancedRange
+
+
+def irange(low: int | None = None, high: int | None = None) -> AdvancedRange:
+    return AdvancedRange(low, high)
+
+
+class Method:
+    """Handles methods and compatibility"""
+
+    handler: FunctionType
+    attempts: int
+    for_device: list[str]
+    for_firmware: AdvancedRange | int
+
+    def __init__(
+        self,
+        handler: FunctionType,
+        attempts: int = 3,
+        for_device: list[str] = [],
+        for_firmware: AdvancedRange | int = AdvancedRange(),
+    ):
+        self.handler = handler
+        self.attempts = attempts
+        self.for_device = [d.lower() for d in for_device]
+        self.for_firmware = for_firmware
+
+    def dev_compat(self, dev: str) -> bool:
+        """Check for device compatibility"""
+        return len(self.for_device) == 0 or dev.lower() in self.for_device
+
+    def firmware_compat(self, fw: int) -> bool:
+        """Check for firmware compatibility"""
+        return (
+            fw in self.for_firmware
+            if isinstance(self.for_firmware, AdvancedRange)
+            else fw == self.for_firmware
+        )
+
+    def iscompat(self, dev: DeviceData) -> bool:
+        """Check for compatibility"""
+        return self.dev_compat(dev._cache["DEVICE"]) and self.firmware_compat(
+            dev._cache["VERSION"]
+        )
+
+    def handle(self, dev: DeviceData, session: HTTP362X) -> dict[str, Any] | None:
+        if not self.iscompat(dev):
+            return None
+
+        ex: Exception | None = None
+        for a in range(self.attempts):
+            try:
+                return self.handler(dev, session)
+            except Exception as e:
+                ex = e
+
+        raise (
+            ex
+            if isinstance(ex, Exception)
+            else Exception(f"Failed to run method {self.handler.__name__}")
+        )
 
 
 class SEL362X(DeviceModule):
@@ -102,6 +196,8 @@ class SEL362X(DeviceModule):
         Pull data from the SEL 362X
         """
 
+        from . import sel362x_pull as p
+
         cls.log.info(f"SEL/362X: Pulling information")
 
         session = cls.get_session(dev)
@@ -110,7 +206,6 @@ class SEL362X(DeviceModule):
             cls.log.error("Failed to initialize session")
             return False
 
-        # TODO: pull
         fid = session.get_fid()
         assert fid
         fid = fid.split("-")
@@ -122,40 +217,40 @@ class SEL362X(DeviceModule):
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
-            Method(initialize_file_management_pull, 1, for_firmware=AR(None, 200)),
+            Method(p.initialize_file_management_pull, 1, for_firmware=AR(None, 200)),
             # System
-            Method(pull_usage_policy, 3),
-            Method(pull_web_server_config, 3),
+            Method(p.pull_usage_policy, 3),
+            Method(p.pull_web_server_config, 3),
             # pull_file_management [moved to the end]
-            Method(pull_physical_sensors, 3),
+            Method(p.pull_physical_sensors, 3),
             # User
-            Method(pull_users, 3),
-            Method(pull_ldap_settings, 3),
-            Method(pull_radius_settings, 3),
-            Method(pull_local_groups, 3),
+            Method(p.pull_users, 3),
+            Method(p.pull_ldap_settings, 3),
+            Method(p.pull_radius_settings, 3),
+            Method(p.pull_local_groups, 3),
             # Network
-            Method(pull_network_settings, 3),
-            Method(pull_static_routes, 3),
-            Method(pull_syslog_settings, 3),
-            Method(pull_firewall_rules, 3),
-            Method(pull_nat_config, 3, [], AR(212)),
-            Method(pull_hosts, 3),
-            Method(pull_snmp_settings, 3),
+            Method(p.pull_network_settings, 3),
+            Method(p.pull_static_routes, 3),
+            Method(p.pull_syslog_settings, 3),
+            Method(p.pull_firewall_rules, 3),
+            Method(p.pull_nat_config, 3, [], AR(212)),
+            Method(p.pull_hosts, 3),
+            Method(p.pull_snmp_settings, 3),
             # Serial Ports
-            Method(pull_serial_port_settings, 3),
-            Method(pull_serial_port_profiles, 3),
-            Method(pull_port_mappings, 3),
+            Method(p.pull_serial_port_settings, 3),
+            Method(p.pull_serial_port_profiles, 3),
+            Method(p.pull_port_mappings, 3),
             # Security
-            Method(pull_certificates, 3),
-            Method(pull_connections, 3),
-            Method(pull_clients, 3),
-            Method(pull_host_keys, 3),
-            Method(pull_passwd_mgmt, 3),
+            Method(p.pull_certificates, 3),
+            Method(p.pull_ipsec_connections, 3),
+            Method(p.pull_clients, 3),
+            Method(p.pull_host_keys, 3),
+            Method(p.pull_passwd_mgmt, 3),
             # Reports
-            Method(pull_syslog_report, 3),
-            Method(pull_diagnostics, 3),
+            Method(p.pull_syslog_report, 3),
+            Method(p.pull_diagnostics, 3),
             # File Management is last to allow for enough time to see an update to the configuration
-            Method(pull_file_management, 1, for_firmware=AR(None, 200)),
+            Method(p.pull_file_management, 1, for_firmware=AR(None, 200)),
         ]
         pulled_config = {}
         used_methods = {}
@@ -194,7 +289,7 @@ class SEL362X(DeviceModule):
 
         try:
             # Pull the index page to add extra data
-            pull_index(dev, session, pulled_config)
+            p.pull_index(dev, session, pulled_config)
         except Exception as e:
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 

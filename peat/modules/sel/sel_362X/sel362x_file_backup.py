@@ -1,5 +1,5 @@
 """
-Get data from /FileManagement.sel.
+Retrieve the system settings backup (among other data)
 
 Author: Francisco Santana
 """
@@ -18,8 +18,7 @@ from bs4.element import Tag
 from peat import log
 from peat.data.models import DeviceData
 
-from ..endpoints import ENDPOINTS
-from ..http import HTTP362X
+from .sel362x_http import ENDPOINTS, HTTP362X
 
 # This is used in more places than one
 HASH_ID: Final[str] = "display_systemSettingsExportHash"
@@ -407,6 +406,3 @@ def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
         },
         "connection_directory_config_hash": sys_settings.connection_directory_hash,
     }
-
-
-__all__ = ["SystemSettingsPoller", "SystemSettings", "pull_file_management"]

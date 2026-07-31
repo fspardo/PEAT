@@ -252,67 +252,6 @@ def equals_parser(expected: str, if_equals: Any = True, otherwise: Any = False) 
     return fn
 
 
-HEADERS_R200 = [
-    "Firewall State:",
-    "Network State:",
-    "Route Table State:",
-    "Hard Drive Usage:",
-    "Process List:",
-    "Entropy Available:",
-    "IPsec Configuration:",
-    "IPsec State:",
-    "IPsec Policy:",
-    "IPsec Status:",
-    "IPsec Total:",
-    "Free Memory:",
-    "Hardware Offload Events:",
-    "SELinux Audit Failures:",
-    "SELinux Enabled:",
-    "Autoscopy Status:",
-    "Whitelist Enabled:",
-]
-
-FIELDS_R200 = [
-    "firewall_state",
-    "network_state",
-    "route_table_state",
-    "hard_drive_usage",
-    "process_list",
-    "available_entropy",
-    "ipsec_config",
-    "ipsec_state",
-    "ipsec_policy",
-    "ipsec_status",
-    "ipsec_total",
-    "free_memory",
-    "hardware_offload_events",
-    "selinux_audit_failures",
-    "selinux",
-    "autoscopy_status",
-    "whitelist",
-]
-
-PARSERS_R200 = [
-    parse_firewall_state,  # Firewall state
-    parse_network_state,  # Network state
-    parse_route_table,  # Route table state
-    parse_hard_drive_usage,  # Hard drive usage
-    parse_process_list,  # Process list
-    int_parser,  # Available entropy
-    joiner_parser("\n"),  # TODO: does ipsec config need its own parser?
-    first_line_parser,  # TODO: find an example for ipsec state
-    first_line_parser,  # TODO: find an example for ipsec policy
-    first_line_parser,  # TODO: find an example for ipsec status
-    first_line_parser,  # TODO: find an example for ipsec total
-    parse_free_mem,  # Free memory
-    first_line_parser,  # TODO: find an example for hardware offload events
-    first_line_parser,  # TODO: find an example for SELinux audit failures
-    first_line_parser,  # SELinux Enabled
-    equals_parser("1"),  # Autoscopy Status
-    equals_parser('"1"'),  # Whitelist Enabled
-]
-
-
 def parse_diagnostics(
     soup: BeautifulSoup,
     headers: list[str],
@@ -371,76 +310,134 @@ def parse_diagnostics(
 
 def parse_diagnostics_R200(soup: BeautifulSoup) -> dict[str, Any]:
     """Parse the page (Firmware R200)"""
+    HEADERS_R200 = [
+        "Firewall State:",
+        "Network State:",
+        "Route Table State:",
+        "Hard Drive Usage:",
+        "Process List:",
+        "Entropy Available:",
+        "IPsec Configuration:",
+        "IPsec State:",
+        "IPsec Policy:",
+        "IPsec Status:",
+        "IPsec Total:",
+        "Free Memory:",
+        "Hardware Offload Events:",
+        "SELinux Audit Failures:",
+        "SELinux Enabled:",
+        "Autoscopy Status:",
+        "Whitelist Enabled:",
+    ]
+
+    FIELDS_R200 = [
+        "firewall_state",
+        "network_state",
+        "route_table_state",
+        "hard_drive_usage",
+        "process_list",
+        "available_entropy",
+        "ipsec_config",
+        "ipsec_state",
+        "ipsec_policy",
+        "ipsec_status",
+        "ipsec_total",
+        "free_memory",
+        "hardware_offload_events",
+        "selinux_audit_failures",
+        "selinux",
+        "autoscopy_status",
+        "whitelist",
+    ]
+
+    PARSERS_R200 = [
+        parse_firewall_state,  # Firewall state
+        parse_network_state,  # Network state
+        parse_route_table,  # Route table state
+        parse_hard_drive_usage,  # Hard drive usage
+        parse_process_list,  # Process list
+        int_parser,  # Available entropy
+        joiner_parser("\n"),  # TODO: does ipsec config need its own parser?
+        first_line_parser,  # TODO: find an example for ipsec state
+        first_line_parser,  # TODO: find an example for ipsec policy
+        first_line_parser,  # TODO: find an example for ipsec status
+        first_line_parser,  # TODO: find an example for ipsec total
+        parse_free_mem,  # Free memory
+        first_line_parser,  # TODO: find an example for hardware offload events
+        first_line_parser,  # TODO: find an example for SELinux audit failures
+        first_line_parser,  # SELinux Enabled
+        equals_parser("1"),  # Autoscopy Status
+        equals_parser('"1"'),  # Whitelist Enabled
+    ]
     return parse_diagnostics(soup, HEADERS_R200, FIELDS_R200, PARSERS_R200)
-
-
-HEADERS_R212 = [
-    "Firewall State:",
-    "NAT State:",
-    "NAT and Port Forwarding connections:",
-    "Network State:",
-    "Route Table State:",
-    "Hard Drive Usage:",
-    "Process List:",
-    "Entropy Available:",
-    "IPsec Configuration:",
-    "IPsec State:",
-    "IPsec Policy:",
-    "IPsec Status:",
-    "IPsec Total:",
-    "Free Memory:",
-    "Hardware Offload Events:",
-    "SELinux Audit Failures:",
-    "SELinux Enabled:",
-    "Autoscopy Status:",
-    "Whitelist Enabled:",
-]
-
-FIELDS_R212 = [
-    "firewall_state",
-    "nat_state",
-    "nat_and_port_forwarding_connections",
-    "network_state",
-    "route_table_state",
-    "hard_drive_usage",
-    "process_list",
-    "available_entropy",
-    "ipsec_config",
-    "ipsec_state",
-    "ipsec_policy",
-    "ipsec_status",
-    "ipsec_total",
-    "free_memory",
-    "hardware_offload_events",
-    "selinux_audit_failures",
-    "selinux",
-    "autoscopy_status",
-    "whitelist",
-]
-
-PARSERS_R212 = [
-    parse_firewall_state,  # Firewall state
-    parse_firewall_state,  # NAT state
-    first_line_parser,  # NAT and Port Forwarding Connections
-    parse_network_state,  # Network state
-    parse_route_table,  # Route table state
-    parse_hard_drive_usage,  # Hard drive usage
-    parse_process_list,  # Process list
-    int_parser,  # Available entropy
-    joiner_parser("\n"),  # TODO: does ipsec config need its own parser?
-    first_line_parser,  # TODO: find an example for ipsec state
-    first_line_parser,  # TODO: find an example for ipsec policy
-    first_line_parser,  # TODO: find an example for ipsec status
-    first_line_parser,  # TODO: find an example for ipsec total
-    parse_free_mem,  # Free memory
-    first_line_parser,  # TODO: find an example for hardware offload events
-    first_line_parser,  # TODO: find an example for SELinux audit failures
-    first_line_parser,  # SELinux Enabled
-    equals_parser("1"),  # Autoscopy Status
-    equals_parser('"1"'),  # Whitelist Enabled
-]
 
 
 def parse_diagnostics_R212(soup: BeautifulSoup) -> dict[str, Any]:
     """Parse the page (R212)"""
+    HEADERS_R212 = [
+        "Firewall State:",
+        "NAT State:",
+        "NAT and Port Forwarding connections:",
+        "Network State:",
+        "Route Table State:",
+        "Hard Drive Usage:",
+        "Process List:",
+        "Entropy Available:",
+        "IPsec Configuration:",
+        "IPsec State:",
+        "IPsec Policy:",
+        "IPsec Status:",
+        "IPsec Total:",
+        "Free Memory:",
+        "Hardware Offload Events:",
+        "SELinux Audit Failures:",
+        "SELinux Enabled:",
+        "Autoscopy Status:",
+        "Whitelist Enabled:",
+    ]
+
+    FIELDS_R212 = [
+        "firewall_state",
+        "nat_state",
+        "nat_and_port_forwarding_connections",
+        "network_state",
+        "route_table_state",
+        "hard_drive_usage",
+        "process_list",
+        "available_entropy",
+        "ipsec_config",
+        "ipsec_state",
+        "ipsec_policy",
+        "ipsec_status",
+        "ipsec_total",
+        "free_memory",
+        "hardware_offload_events",
+        "selinux_audit_failures",
+        "selinux",
+        "autoscopy_status",
+        "whitelist",
+    ]
+
+    PARSERS_R212 = [
+        parse_firewall_state,  # Firewall state
+        parse_firewall_state,  # NAT state
+        first_line_parser,  # NAT and Port Forwarding Connections
+        parse_network_state,  # Network state
+        parse_route_table,  # Route table state
+        parse_hard_drive_usage,  # Hard drive usage
+        parse_process_list,  # Process list
+        int_parser,  # Available entropy
+        joiner_parser("\n"),  # TODO: does ipsec config need its own parser?
+        first_line_parser,  # TODO: find an example for ipsec state
+        first_line_parser,  # TODO: find an example for ipsec policy
+        first_line_parser,  # TODO: find an example for ipsec status
+        first_line_parser,  # TODO: find an example for ipsec total
+        parse_free_mem,  # Free memory
+        first_line_parser,  # TODO: find an example for hardware offload events
+        first_line_parser,  # TODO: find an example for SELinux audit failures
+        first_line_parser,  # SELinux Enabled
+        equals_parser("1"),  # Autoscopy Status
+        equals_parser('"1"'),  # Whitelist Enabled
+    ]
+
     return parse_diagnostics(soup, HEADERS_R212, FIELDS_R212, PARSERS_R212)
