@@ -217,7 +217,7 @@ class SEL362X(DeviceModule):
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
-            Method(p.initialize_file_management_pull, 1, for_firmware=AR(None, 200)),
+            Method(p.initialize_file_management_pull, 1),
             # System
             Method(p.pull_usage_policy, 3),
             Method(p.pull_web_server_config, 3),
@@ -250,7 +250,7 @@ class SEL362X(DeviceModule):
             Method(p.pull_syslog_report, 3),
             Method(p.pull_diagnostics, 3),
             # File Management is last to allow for enough time to see an update to the configuration
-            Method(p.pull_file_management, 1, for_firmware=AR(None, 200)),
+            Method(p.pull_file_management, 1),
         ]
         pulled_config = {}
         used_methods = {}
