@@ -15,9 +15,28 @@ from loguru import logger
 from peat import DeviceData
 
 from .sel362x_file_backup import initialize_file_management_pull, pull_file_management
-from .sel362x_http import HTTP362X
+from .sel362x_http import HTTP362X, AVAILABLE_ENDPOINTS, Response
 from .sel362x_parse import *
 from .sel362x_parse_diagnostics import *
+
+# ---------------------------------------------------------------------------- #
+#                                    Helpers                                   #
+# ---------------------------------------------------------------------------- #
+
+
+def pull_page(session: HTTP362X, endpoint: AVAILABLE_ENDPOINTS) -> Response:
+    """Pull a page"""
+    response = session.get_endpoint(endpoint)
+
+    if not response:
+        raise Exception("No response")
+    if response.status_code != 200:
+        raise Exception(f"Got non-200 status: {response.status_code}")
+    if response.history:
+        raise Exception(f"Redirected to {response.history[-1].url}")
+
+    return response
+
 
 # ---------------------------------------------------------------------------- #
 #                              AllowedClients.sel                              #
@@ -30,14 +49,7 @@ def pull_clients(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("allowed_clients")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "allowed_clients")
 
     soup = session.gen_soup(response.text)
 
@@ -60,14 +72,7 @@ def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
 
     from . import AR
 
-    response = session.get_endpoint("diagnostics")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "diagnostics")
 
     logger.debug("Parsing page...")
     soup = session.gen_soup(response.text)
@@ -84,14 +89,7 @@ def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
 
 
 def _correct_firewall_config_view(session: HTTP362X) -> str:
-    response = session.get_endpoint("firewall")
-
-    if not response:
-        raise Exception("No response")
-    elif response.status_code != 200:
-        raise Exception("Non-200 status code")
-    elif len(response.history) > 0:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "firewall")
 
     soup = session.gen_soup(response.text)
 
@@ -134,7 +132,9 @@ def pull_firewall_rules(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Corrects the Firewall view to integrate all rules into a singular list
     """
     return {
-        "firewall": parse_firewall_rules(session.gen_soup(_correct_firewall_config_view(session)))
+        "firewall": parse_firewall_rules(
+            session.gen_soup(_correct_firewall_config_view(session))
+        )
     }
 
 
@@ -148,13 +148,7 @@ def pull_hosts(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Pull the configuration under /Hosts.sel
     """
 
-    response = session.get_endpoint("hosts")
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "hosts")
 
     logger.debug("Parsing page...")
     return {"hosts": parse_hosts(session.gen_soup(response.text))}
@@ -173,14 +167,7 @@ def pull_index(dev: DeviceData, session: HTTP362X, data: dict[str, Any]):
     This is to be run last.
     """
     logger.debug("Pulling page...")
-    response = session.get_endpoint("dashboard")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "dashboard")
 
     soup = session.gen_soup(response.text)
 
@@ -200,14 +187,7 @@ def pull_ipsec_connections(dev: DeviceData, session: HTTP362X) -> dict[str, Any]
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("ipsec_connections")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "ipsec_connections")
 
     soup = session.gen_soup(response.text)
 
@@ -228,14 +208,7 @@ def pull_ldap_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Pull the configuration under /LDAP.sel
     """
     logger.debug("Pulling page...")
-    response = session.get_endpoint("ldap_settings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "ldap_settings")
 
     logger.debug("Parsing page...")
     return {"ldap": parse_ldap_settings(session.gen_soup(response.text))}
@@ -252,14 +225,7 @@ def pull_local_groups(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("local_groups")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "local_groups")
 
     logger.debug("Parsing page...")
     return {"local_groups": parse_local_groups(session.gen_soup(response.text))}
@@ -276,14 +242,7 @@ def pull_nat_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("nat")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "nat")
 
     logger.debug("Parsing page...")
     return {"NAT": parse_nat_config(session.gen_soup(response.text))}
@@ -299,14 +258,7 @@ def pull_network_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Pull the configuration under /NetworkSettings.sel
     """
 
-    response = session.get_endpoint("network_settings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "network_settings")
 
     soup = session.gen_soup(response.text)
 
@@ -333,14 +285,7 @@ def pull_passwd_mgmt(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("password_management")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "password_management")
 
     soup = session.gen_soup(response.text)
 
@@ -362,14 +307,7 @@ def pull_physical_sensors(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     result = {}
-    response = session.get_endpoint("physical_sensors")
-
-    if not response:
-        raise Exception("No response")
-    if len(response.history) > 0:
-        raise Exception("Redirected")
-    if response.status_code != 200:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "physical_sensors")
 
     soup = session.gen_soup(response.text)
 
@@ -404,14 +342,7 @@ def pull_port_mappings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("port_mappings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "port_mappings")
 
     soup = session.gen_soup(response.text)
 
@@ -467,14 +398,7 @@ def pull_radius_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Pull the configuration under /LDAP.sel
     """
     logger.debug("Pulling page...")
-    response = session.get_endpoint("radius_settings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "radius_settings")
 
     soup = session.gen_soup(response.text)
 
@@ -504,14 +428,7 @@ def pull_serial_port_profiles(dev: DeviceData, session: HTTP362X) -> dict[str, A
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("serial_port_profiles")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "serial_port_profiles")
 
     soup = session.gen_soup(response.text)
 
@@ -532,14 +449,7 @@ def pull_serial_port_settings(dev: DeviceData, session: HTTP362X) -> dict[str, A
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("serial_port_settings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "serial_port_settings")
 
     soup = session.gen_soup(response.text)
 
@@ -596,14 +506,7 @@ def pull_snmp_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("snmp_settings")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "snmp_settings")
 
     logger.debug("Parsing page...")
 
@@ -628,14 +531,7 @@ def pull_host_keys(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("ssh_host_key")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "ssh_host_key")
 
     soup = session.gen_soup(response.text)
 
@@ -656,13 +552,7 @@ def pull_static_routes(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Pulls data from the /StaticRoutes.sel endpoint
     """
 
-    response = session.get_endpoint("static_routes")
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Status code {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "static_routes")
 
     soup = session.gen_soup(response.text)
 
@@ -680,14 +570,7 @@ def pull_syslog_settings(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("syslog")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "syslog")
 
     logger.debug("Parsing page...")
     return {"syslog_settings": parse_syslog_settings(session.gen_soup(response.text))}
@@ -706,14 +589,7 @@ def pull_syslog_report(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("system_logs")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "system_logs")
 
     soup = session.gen_soup(response.text)
     t = soup.find("input", {"type": "hidden", "name": "t"})
@@ -751,14 +627,7 @@ def pull_usage_policy(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull from the /UsagePolicy.sel endpoint
     """
-    response = session.get_endpoint("usage_policy")
-
-    if not response:
-        raise Exception("No response")
-    if len(response.history) > 0:
-        raise Exception(f"Redirected to {response.history[-1].url}")
-    if response.status_code != 200:
-        raise Exception("Non-200 status code")
+    response = pull_page(session, "usage_policy")
 
     soup = session.gen_soup(response.text)
 
@@ -777,14 +646,7 @@ def pull_users(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     result = {}
 
     # Get the page
-    response = session.get_endpoint("accounts")
-    # Check response
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Error {response.status_code}")
-    if response.history:
-        raise Exception("Redirected")
+    response = pull_page(session, "accounts")
 
     def _pull_user_info(dev: DeviceData, session: HTTP362X, row: Tag) -> dict[str, Any]:
         """
@@ -843,16 +705,9 @@ def pull_web_server_config(dev: DeviceData, session: HTTP362X) -> dict[str, Any]
     logger.debug("Pulling page...")
     response = None
     if dev._cache["VERSION"] > 200:
-        response = session.get_endpoint("management_interface")
+        response = pull_page(session, "management_interface")
     else:
-        response = session.get_endpoint("web_server")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+        response = pull_page(session, "web_server")
 
     soup = session.gen_soup(response.text)
 
@@ -874,14 +729,7 @@ def pull_certificates(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
 
     logger.debug("Pulling page...")
-    response = session.get_endpoint("x509_certificates")
-
-    if not response:
-        raise Exception("No response")
-    if response.status_code != 200:
-        raise Exception(f"Got non-200 status: {response.status_code}")
-    if response.history:
-        raise Exception(f"Redirected to {response.history[-1].url}")
+    response = pull_page(session, "x509_certificates")
 
     soup = session.gen_soup(response.text)
 
