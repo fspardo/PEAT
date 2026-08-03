@@ -2,8 +2,9 @@
 Parse methods for the SEL 3622 and 3620
 
 Authors:
-    - Francisco Santana
-    - Nehal Ameen
+
+- Francisco Santana
+- Nehal Ameen
 """
 
 from hashlib import sha256

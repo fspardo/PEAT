@@ -2,8 +2,9 @@
 Pull methods for the SEL 3622 and 3620
 
 Authors:
-    - Francisco Santana
-    - Nehal Ameen
+
+- Francisco Santana
+- Nehal Ameen
 """
 
 from typing import Any, Literal
@@ -69,8 +70,7 @@ def pull_diagnostics(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     """
     Pull the configuration under /Diagnostics.sel
     """
-
-    from . import AR
+    from . import AR  # This would cause a circular import
 
     response = pull_page(session, "diagnostics")
 

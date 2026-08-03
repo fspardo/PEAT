@@ -14,37 +14,35 @@ from time import sleep
 from peat import DeviceData, DeviceModule, IPMethod, exit_handler
 
 from .sel362x_http import HTTP362X
+from . import sel362x_pull as p
 
 from types import FunctionType
-from typing import Any
+from typing import Any, Optional
+from pydantic import BaseModel
 
 
-class AdvancedRange:
+class AdvancedRange(BaseModel):
     """An inclusive range type for versioning."""
 
-    low: int | None
-    high: int | None
-
-    def __init__(self, low: int | None = None, high: int | None = None):
-        self.low = low
-        self.high = high
+    low: Optional[int] = None
+    high: Optional[int] = None
 
     def __contains__(self, value: int) -> bool:
         result = True
 
-        if self.low:
+        if self.low is not None:
             result = value >= self.low
-        if self.high and result:
+        if self.high is not None and result:
             result = self.high >= value
 
         return result
 
     def __str__(self) -> str:
-        if self.low and self.high:
+        if self.low is not None and self.high is not None:
             return f"{self.low} - {self.high}"
-        elif self.low:
+        elif self.low is not None:
             return f">= {self.low}"
-        elif self.high:
+        elif self.high is not None:
             return f"<= {self.high}"
         else:
             return "any"
@@ -54,7 +52,7 @@ AR = AdvancedRange
 
 
 def irange(low: int | None = None, high: int | None = None) -> AdvancedRange:
-    return AdvancedRange(low, high)
+    return AdvancedRange(low=low, high=high)
 
 
 class Method:
@@ -89,14 +87,15 @@ class Method:
             else fw == self.for_firmware
         )
 
-    def iscompat(self, dev: DeviceData) -> bool:
+    def is_compat(self, dev: DeviceData) -> bool:
         """Check for compatibility"""
         return self.dev_compat(dev._cache["DEVICE"]) and self.firmware_compat(
             dev._cache["VERSION"]
         )
 
     def handle(self, dev: DeviceData, session: HTTP362X) -> dict[str, Any] | None:
-        if not self.iscompat(dev):
+        """Handle this method. Performs a compatibility check before executing the encapsulated method."""
+        if not self.is_compat(dev):
             return None
 
         ex: Exception | None = None
@@ -154,15 +153,12 @@ class SEL362X(DeviceModule):
             if dev.options["web"]["user"]:
                 user = dev.options["web"]["user"]
                 passwd = dev.options["web"]["pass"]
-
-                assert isinstance(user, str)
-                assert isinstance(passwd, str)
             else:
                 user = cls.default_options["web"]["user"]
                 passwd = cls.default_options["web"]["pass"]
 
         cls.log.debug(f"Attempting log-in as {user}/{passwd}")
-        if not session.login(user, passwd):
+        if not session.login(str(user), str(passwd)):
             cls.log.error("Failed to log in to the device!")
             return None
         else:
@@ -195,9 +191,6 @@ class SEL362X(DeviceModule):
         """
         Pull data from the SEL 362X
         """
-
-        from . import sel362x_pull as p
-
         cls.log.info(f"SEL/362X: Pulling information")
 
         session = cls.get_session(dev)
@@ -207,7 +200,8 @@ class SEL362X(DeviceModule):
             return False
 
         fid = session.get_fid()
-        assert fid
+        if fid is None:
+            raise Exception("Could not get the device's FID")
         fid = fid.split("-")
         device = f"{fid[0]}-{fid[1]}"
         version = int(fid[2][1:])
@@ -217,7 +211,7 @@ class SEL362X(DeviceModule):
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
-            Method(p.initialize_file_management_pull, 1),
+            Method(p.initialize_file_management_pull, 1, for_firmware=AR(high=200)),
             # System
             Method(p.pull_usage_policy, 3),
             Method(p.pull_web_server_config, 3),
@@ -233,7 +227,7 @@ class SEL362X(DeviceModule):
             Method(p.pull_static_routes, 3),
             Method(p.pull_syslog_settings, 3),
             Method(p.pull_firewall_rules, 3),
-            Method(p.pull_nat_config, 3, [], AR(212)),
+            Method(p.pull_nat_config, 3, [], AR(low=212)),
             Method(p.pull_hosts, 3),
             Method(p.pull_snmp_settings, 3),
             # Serial Ports
@@ -250,7 +244,7 @@ class SEL362X(DeviceModule):
             Method(p.pull_syslog_report, 3),
             Method(p.pull_diagnostics, 3),
             # File Management is last to allow for enough time to see an update to the configuration
-            Method(p.pull_file_management, 1),
+            Method(p.pull_file_management, 1, for_firmware=AR(high=200)),
         ]
         pulled_config = {}
         used_methods = {}
@@ -259,7 +253,6 @@ class SEL362X(DeviceModule):
 
         for method in methods:
             tried_methods += 1
-            # Informational output
             cls.log.info(
                 f'({tried_methods}/{len(methods)}) Attempting method "{method.handler.__name__}" for {dev.ip}:{port}'
             )
@@ -268,7 +261,9 @@ class SEL362X(DeviceModule):
                 # Call the method (`.handle()` checks for compatibility)
                 result = method.handle(dev, session)
                 if result is None:  # None indicates incompatibility
-                    cls.log.info("Method was not compatible")
+                    cls.log.info(
+                        f'({tried_methods}/{len(methods)}) Method "{method.handler.__name__}" was not compatible'
+                    )
                     used_methods[method.handler.__name__] = "NOT COMPAT"
                     continue
 
@@ -277,10 +272,14 @@ class SEL362X(DeviceModule):
                         cls.log.warning(
                             f"Key {k} is already present from a previous pull; overwriting..."
                         )
+
                 # Report OK and update pulled config
                 used_methods[method.handler.__name__] = "OK"
                 pulled_config.update(result)
-                cls.log.info("Successfully used method")
+                cls.log.info(
+                    f'({tried_methods}/{len(methods)}) Successfully used method "{method.handler.__name__}"'
+                )
+
                 sleep(1)
             except Exception as e:
                 # Report error and mark not OK
@@ -307,13 +306,13 @@ class SEL362X(DeviceModule):
 # This seems to list the methods to be used to perform validation
 SEL362X.ip_methods = [
     IPMethod(
-        name="Perform a Web fingerprint (SEL-3622)",
+        name="Perform a Web fingerprint (SEL-362x)",
         description=str(SEL362X._verify_http.__doc__).strip(),
         type="unicast_ip",
         identify_function=SEL362X._verify_http,
         default_port=443,
         protocol="https",
-        reliability=5,  # TODO: Determine value
+        reliability=8,
         transport="tcp",
     )
 ]
