@@ -22,7 +22,8 @@ from pydantic import BaseModel
 from copy import deepcopy as clone
 
 
-def summarize(dev: DeviceData, data: dict[str, Any]):
+def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
+    """Summarize the contents of the full web config."""
     if "users" in data:
         for username in data["users"]:
             dev.related.user.add(username)
@@ -333,7 +334,7 @@ class SEL362X(DeviceModule):
         dev.write_file(used_methods, "attempted_methods.json")
         dev.related.files.add("attempted_methods.json")
 
-        summarize(dev, pulled_config)
+        webcfg_summarize(dev, pulled_config)
 
         cls.update_dev(dev)
 
