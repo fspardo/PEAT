@@ -11,7 +11,7 @@ Authors:
 
 from time import sleep
 
-from peat import DeviceData, DeviceModule, IPMethod, exit_handler
+from peat import DeviceData, DeviceModule, IPMethod, exit_handler, Service
 
 from .sel362x_http import HTTP362X
 from . import sel362x_pull as p
@@ -19,6 +19,32 @@ from . import sel362x_pull as p
 from types import FunctionType
 from typing import Any, Optional
 from pydantic import BaseModel
+from copy import deepcopy as clone
+
+
+def summarize(dev: DeviceData, data: dict[str, Any]):
+    if "users" in data:
+        for username in data["users"]:
+            dev.related.user.add(username)
+
+    if "network" in data:
+        for addr in data["network"]["addresses"]:
+            dev.related.ip.add(addr)
+        if "hostname" in data["network"]["global"]:
+            dev.related.hosts.add(data["network"]["global"]["hostname"])
+
+    if "web_server" in data:
+        port = data["web_server"]["port"]
+        for listener in data["web_server"]["listeners"]:
+            dev.service.append(
+                Service(
+                    port=port,
+                    protocol="https",
+                    transport="tcp",
+                    listen_address=listener["ip"],
+                )
+            )
+    pass
 
 
 class AdvancedRange(BaseModel):
@@ -122,7 +148,7 @@ class SEL362X(DeviceModule):
     vendor_id = "SEL"
     vendor_name = "Schweitzer Engineering Laboratories"
     brand = "SEL"
-    module_aliases = ["sel-3622", "sel-3620", "sel-362x", "3622", "3620", "362x"]
+    module_aliases = ["sel-3622", "sel-362x", "3622", "362x"]
     default_options = {"web": {"user": "admin", "pass": "Admin123!", "users": []}}
 
     @classmethod
@@ -293,12 +319,23 @@ class SEL362X(DeviceModule):
             cls.log.warning(f"Failed to pull data from dashboard: {e}")
 
         # Write relevant files
-        dev.write_file(pulled_config, "web_cfg.json")  # Full web configuration
-        dev.write_file(used_methods, "attempted_methods.json")
-        dev.related.files.add("web_cfg.json")
-        cls.update_dev(dev)
 
-        # TODO: populate device overview with data
+        dev.write_file(pulled_config, "web_cfg.json")  # Full web configuration
+        dev.related.files.add("web_cfg.json")
+
+        microconf = clone(pulled_config)
+        if "syslog_report" in microconf:
+            del microconf["syslog_report"]
+
+        dev.write_file(microconf, "short_web_cfg.json")
+        dev.related.files.add("short_web_cfg.json")
+
+        dev.write_file(used_methods, "attempted_methods.json")
+        dev.related.files.add("attempted_methods.json")
+
+        summarize(dev, pulled_config)
+
+        cls.update_dev(dev)
 
         return True
 
