@@ -236,6 +236,7 @@ class SEL362X(DeviceModule):
 
         fid = session.get_fid()
         if fid is None:
+            cls.log.error("Failed to get the device's FID")
             raise Exception("Could not get the device's FID")
             
         fid = parse_fid(fid)
@@ -311,7 +312,7 @@ class SEL362X(DeviceModule):
                 used_methods[method.handler.__name__] = "OK"
                 pulled_config.update(result)
                 cls.log.info(
-                    f'({tried_methods}/{len(methods)}) Successfully used method "{method.handler.__name__}"'
+                    f'({tried_methods}/{len(methods)}) Successfully used method "{method.handler.__name__}" on {dev.ip}:{port}'
                 )
 
                 sleep(1)
