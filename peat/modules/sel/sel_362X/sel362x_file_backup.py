@@ -7,10 +7,10 @@ Author: Francisco Santana
 # TODO: This needs to be updated to better support the SEL-3620 or R212 of the firmware.
 # It would be best to implement support for the single file backup tab as well
 
-from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Final
+from pydantic import BaseModel
 
 from bs4.element import Tag
 from loguru import logger as log
@@ -19,61 +19,57 @@ from peat.data.models import DeviceData
 
 from .sel362x_http import ENDPOINTS, HTTP362X
 
-# This is used in more places than one
-SYSTEM_SETTINGS_HASH_ID = [
+# Variants of the class for the system settings hash
+SYSTEM_SETTINGS_HASH_ID: Final[list[str]] = [
     "display_systemSettingsExportHash",
     "display_systemFileExportHash",
 ]
 
-# The base content to perform a request on this page
-FORM_CONTENT_R200 = {
-    "fileUploadType": (None, "firmwareFile"),
-    "JAVASCRIPT": (None, "True"),
-    "MAX_FILE_SIZE": (None, "125000000"),
-    "t": (None, ""),
-    "uploadedfile": (None, ""),
-    "ImportPassword": (None, ""),
-    "Password": (None, ""),
-    "PasswordConfirm": (None, ""),
-    "submit": (None, ""),
-}
-FORM_CONTENT_R212 = {
-    "fileUploadType": (None, "firmwareFile"),
-    "JAVASCRIPT": (None, "True"),
-    "MAX_FILE_SIZE": (None, "125000000"),
-    "t": (None, ""),
-    "uploadedfile": (None, ""),
-    "ImportPassword": (None, ""),
-    "SysSettingsPassword": (None, ""),
-    "SysSettingsPasswordConfirm": (None, ""),
-    "BackupFilePassword": (None, ""),
-    "BackupFilePasswordConfirm": (None, ""),
-    "submit": (None, ""),
-}
 
-
-def copy_form(version: int):
-    from . import AR
-
-    if version in AR(200):
-        return copy(FORM_CONTENT_R200)
+def copy_form(version: int) -> dict[str, tuple[str | None, str]]:
+    """Get the appropriate base form"""
+    # The base content to perform a request on this page
+    if version <= 200:
+        return {
+            "fileUploadType": (None, "firmwareFile"),
+            "JAVASCRIPT": (None, "True"),
+            "MAX_FILE_SIZE": (None, "125000000"),
+            "t": (None, ""),
+            "uploadedfile": (None, ""),
+            "ImportPassword": (None, ""),
+            "Password": (None, ""),
+            "PasswordConfirm": (None, ""),
+            "submit": (None, ""),
+        }
     else:
-        return copy(FORM_CONTENT_R212)
+        return {
+            "fileUploadType": (None, "firmwareFile"),
+            "JAVASCRIPT": (None, "True"),
+            "MAX_FILE_SIZE": (None, "125000000"),
+            "t": (None, ""),
+            "uploadedfile": (None, ""),
+            "ImportPassword": (None, ""),
+            "SysSettingsPassword": (None, ""),
+            "SysSettingsPasswordConfirm": (None, ""),
+            "BackupFilePassword": (None, ""),
+            "BackupFilePasswordConfirm": (None, ""),
+            "submit": (None, ""),
+        }
 
 
 # How many times to query the page before forcing a pull
 MAX_QUERIES: int = 3
 
 
-def sys_settings_form_generate(password: str, token: str, version: int):
+def sys_settings_form_generate(
+    password: str, token: str, version: int
+) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Generate" data
     """
-    from . import AR
-
     result = copy_form(version)
     result["t"] = (None, token)
-    if version in AR(200):
+    if version <= 200:
         result["Password"] = (None, password)
         result["PasswordConfirm"] = (None, password)
         result["submit"] = (None, "Generate")
@@ -85,15 +81,15 @@ def sys_settings_form_generate(password: str, token: str, version: int):
     return result
 
 
-def sys_settings_form_export(token: str, version: int):
+def sys_settings_form_export(
+    token: str, version: int
+) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Export" data
     """
-    from . import AR
-
     result = copy_form(version)
     result["t"] = (None, token)
-    if version in AR(200):
+    if version <= 200:
         result["submit"] = (None, "Export")
     else:
         result["submit"] = (None, "Export System Settings")
@@ -101,15 +97,15 @@ def sys_settings_form_export(token: str, version: int):
     return result
 
 
-def single_file_form_generate(password: str, token: str, version: int):
+def single_file_form_generate(
+    password: str, token: str, version: int
+) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Generate" data
     """
-    from . import AR
-
     result = copy_form(version)
     result["t"] = (None, token)
-    if version in AR(200):
+    if version <= 200:
         raise Exception("Not supported")
     else:
         result["BackupFilePassword"] = (None, password)
@@ -119,15 +115,15 @@ def single_file_form_generate(password: str, token: str, version: int):
     return result
 
 
-def single_file_form_export(token: str, version: int):
+def single_file_form_export(
+    token: str, version: int
+) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Export" data
     """
-    from . import AR
-
     result = copy_form(version)
     result["t"] = (None, token)
-    if version in AR(200):
+    if version <= 200:
         raise Exception("Not supported")
     else:
         result["submit"] = (None, "Export Backup File")
@@ -135,8 +131,7 @@ def single_file_form_export(token: str, version: int):
     return result
 
 
-@dataclass
-class SystemSettings:
+class SystemSettings(BaseModel):
     """
     Structured representation of the data expected here
     """
@@ -226,7 +221,9 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
     conn_dir_hash = soup.find("span", {"id": "display_connectionDirectoryHash"})
 
     if not isinstance(conn_dir_hash, Tag):
-        http.log.error("Could not get the last uploaded connection directory configuration hash")
+        http.log.error(
+            "Could not get the last uploaded connection directory configuration hash"
+        )
         return None
 
     cdh = conn_dir_hash.get_text(strip=True)
@@ -268,7 +265,7 @@ def pull_hash(http: HTTP362X) -> str | None:
     return hash.get_text(strip=True)
 
 
-def get_password():
+def get_password(dev: DeviceData) -> str:
     """
     For now, returns a static password.
 
@@ -277,6 +274,7 @@ def get_password():
     depend on the raw contents of the file, as opposed to the
     compressed, encrypted, Base64 representation of the file.
     """
+
     return "Peat!123"
 
 
@@ -286,6 +284,7 @@ class SystemSettingsPoller:
     """
 
     http: HTTP362X
+    dev: DeviceData
     old_hash: str
     token: str
     password: str
@@ -311,28 +310,33 @@ class SystemSettingsPoller:
         info = pull_info(self.http)
 
         if not info:
+            log.error("Failed to pull baseline information about the device")
             return False
 
+        # Old hash and token
         old_hash, self.token = info["old_hash"], info["token"]
-
-        log.debug(f"Old hash: {old_hash}; token: {self.token}")
-
-        password = get_password()
-
+        # Get the password from the configuration, if available
+        password = get_password(self.dev)
+        # Post the endpoint with a request to generate the form
         response = self.http.post_endpoint(
             "file_management",
-            files=sys_settings_form_generate(password, self.token, self.dev._cache["VERSION"]),
-            headers={"Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
+            files=sys_settings_form_generate(
+                password, self.token, self.dev._cache["VERSION"]
+            ),
+            headers={
+                "Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
+            },
         )
 
+        # Handle POST request errors
         if not response:
             log.error("No response")
             return False
-
         if response.status_code != 200:
             log.error("Could not query setting file creation")
             return False
 
+        # Parse the form and look for a message
         soup = self.http.gen_soup(response.text)
         message = soup.find("div", {"id": "formMessage"})
 
@@ -379,7 +383,9 @@ class SystemSettingsPoller:
         response = self.http.post_endpoint(
             "file_management",
             files=sys_settings_form_export(self.token, self.dev._cache["VERSION"]),
-            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
+            headers={
+                "Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
+            },
         )
 
         if not response:
@@ -403,16 +409,16 @@ class SystemSettingsPoller:
         assert isinstance(response.content, bytes)
 
         return SystemSettings(
-            self.old_hash,
-            hash,
-            self.password,
-            response.content.decode(),
-            gen_time,
-            f"SystemSettings-{gen_time}.bkp",
-            self.current_version,
-            self.previous_version,
-            self.ss_last_uploaded_hash,
-            self.connection_directory_hash,
+            prev_hash=self.old_hash,
+            hash=hash,
+            password=self.password,
+            data=response.content.decode(),
+            time=gen_time,
+            file_name=f"SystemSettings-{gen_time}.bkp",
+            current_firmware=self.current_version,
+            previous_firmware=self.previous_version,
+            last_uploaded_config_hash=self.ss_last_uploaded_hash,
+            connection_directory_hash=self.connection_directory_hash,
         )
 
 
