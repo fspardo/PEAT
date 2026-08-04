@@ -4,7 +4,7 @@ SEL HTTP module specialized for the SEL-3622
 Author: Francisco Santana
 """
 
-from typing import Literal, Final
+from typing import Final, Literal
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -115,17 +115,13 @@ class HTTP362X(SELHTTP):
         else:
             return super().get(*args, **kwargs)
 
-    def get_endpoint(
-        self, page: AVAILABLE_ENDPOINTS, *args, **kwargs
-    ) -> Response | None:
+    def get_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
         """
         Simplification of the "get" function which takes the name of the endpoint
         """
         return self.get(ENDPOINTS[page], *args, **kwargs)
 
-    def post_endpoint(
-        self, page: AVAILABLE_ENDPOINTS, *args, **kwargs
-    ) -> Response | None:
+    def post_endpoint(self, page: AVAILABLE_ENDPOINTS, *args, **kwargs) -> Response | None:
         """
         Simplification of the "post" function which takes the name of the endpoint
         """
@@ -154,9 +150,7 @@ class HTTP362X(SELHTTP):
 
     def needs_selssid(self, soup: BeautifulSoup) -> bool:
         """Checks if the SELSSID token is required to log in"""
-        return isinstance(
-            soup.find("input", {"name": "SELSESSID", "type": "hidden"}), Tag
-        )
+        return isinstance(soup.find("input", {"name": "SELSESSID", "type": "hidden"}), Tag)
 
     def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
         """
@@ -193,9 +187,7 @@ class HTTP362X(SELHTTP):
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
-        resp = self.post(
-            self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10)
-        )
+        resp = self.post(self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10))
 
         # Null response means no host
         if not resp:
@@ -204,9 +196,7 @@ class HTTP362X(SELHTTP):
 
         # Non-200 response indicates an error
         if resp.status_code != 200:
-            self.log.error(
-                f"Login failed: received non-200 response ({resp.status_code})."
-            )
+            self.log.error(f"Login failed: received non-200 response ({resp.status_code}).")
             return False
 
         # Log-in failure

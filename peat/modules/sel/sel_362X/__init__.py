@@ -9,17 +9,18 @@ Authors:
     - Nehal Ameen
 """
 
+from copy import deepcopy as clone
 from time import sleep
-
-from peat import DeviceData, DeviceModule, IPMethod, exit_handler, Service
-
-from .sel362x_http import HTTP362X
-from . import sel362x_pull as p
-
 from types import FunctionType
 from typing import Any, Optional
+
 from pydantic import BaseModel
-from copy import deepcopy as clone
+
+from peat import DeviceData, DeviceModule, IPMethod, Service, exit_handler
+
+from ..relay_parse import parse_fid
+from . import sel362x_pull as p
+from .sel362x_http import HTTP362X
 
 
 def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
@@ -45,7 +46,11 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
                     listen_address=listener["ip"],
                 )
             )
-    pass
+
+    if "version_information" in data:
+        dev.firmware.version = data["version_information"]["version"]
+        dev.firmware.extra["fid"] = data["version_information"]["fid"]
+        dev.firmware.extra["serial_number"] = data["version_information"]["serial_number"]
 
 
 class AdvancedRange(BaseModel):
@@ -229,12 +234,11 @@ class SEL362X(DeviceModule):
         fid = session.get_fid()
         if fid is None:
             raise Exception("Could not get the device's FID")
-        fid = fid.split("-")
-        device = f"{fid[0]}-{fid[1]}"
-        version = int(fid[2][1:])
+            
+        fid = parse_fid(fid)
 
-        dev._cache["DEVICE"] = device
-        dev._cache["VERSION"] = version
+        dev._cache["DEVICE"] = fid["model"]
+        dev._cache["VERSION"] = fid["revision"]
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later

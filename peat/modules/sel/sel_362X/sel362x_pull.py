@@ -16,7 +16,7 @@ from loguru import logger
 from peat import DeviceData
 
 from .sel362x_file_backup import initialize_file_management_pull, pull_file_management
-from .sel362x_http import HTTP362X, AVAILABLE_ENDPOINTS, Response
+from .sel362x_http import AVAILABLE_ENDPOINTS, HTTP362X, Response
 from .sel362x_parse import *
 from .sel362x_parse_diagnostics import *
 
@@ -132,9 +132,7 @@ def pull_firewall_rules(dev: DeviceData, session: HTTP362X) -> dict[str, Any]:
     Corrects the Firewall view to integrate all rules into a singular list
     """
     return {
-        "firewall": parse_firewall_rules(
-            session.gen_soup(_correct_firewall_config_view(session))
-        )
+        "firewall": parse_firewall_rules(session.gen_soup(_correct_firewall_config_view(session)))
     }
 
 
