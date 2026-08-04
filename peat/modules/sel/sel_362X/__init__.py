@@ -238,7 +238,7 @@ class SEL362X(DeviceModule):
         fid = parse_fid(fid)
 
         dev._cache["DEVICE"] = fid["model"]
-        dev._cache["VERSION"] = fid["revision"]
+        dev._cache["VERSION"] = int(fid["revision"][1:])
 
         methods = [  # List pull methods here ((dev: DeviceData, session) -> dict[str, Any])
             # Prepare for pull later
