@@ -146,8 +146,11 @@ class Method:
 
 class SEL362X(DeviceModule):
     """
-    SEL-3620 Security Gateway
+    SEL-3620 Security Gateway.
     SEL-3622 Ethernet Security Gateway.
+
+    It is possible (and planned) to replace the 3620 module with this one.
+    To avoid ambiguity, this module will not alias the 3620.
     """
 
     device_type = "Gateway"
