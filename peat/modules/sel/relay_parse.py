@@ -1298,7 +1298,23 @@ def extract_string(data: bytes | str, regex: str, flags=None) -> str:
     return ""
 
 
-def parse_fid(id_string: str) -> dict[str, str]:
+PARSE_FID_FIELDS = Literal[
+    "id",
+    "version",
+    "revision",
+    "settings_version",
+    "release_date",
+    "model",
+    "product",
+]
+
+
+def parse_fid(
+    id_string: str,
+) -> dict[
+    PARSE_FID_FIELDS,
+    str,
+]:
     """
     Parse the ``FID`` and ``BFID`` strings into a :class:`dict` with
     the relay model and firmware information.
