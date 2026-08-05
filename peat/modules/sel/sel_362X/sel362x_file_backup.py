@@ -275,7 +275,13 @@ def get_password(dev: DeviceData) -> str:
     compressed, encrypted, Base64 representation of the file.
     """
 
-    return "Peat!123"
+    
+    pw = dev.options.get("password")
+
+    if pw:
+        return str(pw)
+    else:
+        return "Peat!123"
 
 
 class SystemSettingsPoller:
@@ -406,7 +412,9 @@ class SystemSettingsPoller:
 
         gen_time = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%S}"
 
-        assert isinstance(response.content, bytes)
+        if not isinstance(response.content, bytes):
+            log.error("Invalid response content type")
+            return False
 
         return SystemSettings(
             prev_hash=self.old_hash,
@@ -444,6 +452,7 @@ def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
 
     # Query periodically up to a maximum number of times.
     # Querying this way ensures we do not retrieve an outdated version of the backup
+    queries = dev.options.get("")
     for i in range(0, MAX_QUERIES):  # TODO: possibly change this to be a setting
         log.debug(f"Query {i + 1} of {MAX_QUERIES}...")
         from time import sleep

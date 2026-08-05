@@ -31,6 +31,9 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
 
     if "network" in data:
         for addr in data["network"]["addresses"]:
+            addr: str = data["network"]["addresses"][addr]["address"]
+            addr = addr.split("/")[0]
+            
             dev.related.ip.add(addr)
         if "hostname" in data["network"]["global"]:
             dev.related.hosts.add(data["network"]["global"]["hostname"])
@@ -38,19 +41,28 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
     if "web_server" in data:
         port = data["web_server"]["port"]
         for listener in data["web_server"]["listeners"]:
+            listener = data["web_server"]["listeners"][listener]
+
+            ip: str = listener["ip"]
+            ip = ip.split("/")[0]
+
             dev.service.append(
                 Service(
                     port=port,
                     protocol="https",
                     transport="tcp",
-                    listen_address=listener["ip"],
+                    listen_address=ip,
                 )
             )
+
+            dev.related.ip.add(ip)
 
     if "version_information" in data:
         dev.firmware.version = data["version_information"]["version"]
         dev.firmware.extra["fid"] = data["version_information"]["fid"]
-        dev.firmware.extra["serial_number"] = data["version_information"]["serial_number"]
+        dev.firmware.extra["serial_number"] = data["version_information"][
+            "serial_number"
+        ]
 
 
 class AdvancedRange(BaseModel):
@@ -238,7 +250,7 @@ class SEL362X(DeviceModule):
         if fid is None:
             cls.log.error("Failed to get the device's FID")
             raise Exception("Could not get the device's FID")
-            
+
         fid = parse_fid(fid)
 
         dev._cache["DEVICE"] = fid["model"]
