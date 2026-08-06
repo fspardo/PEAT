@@ -226,7 +226,7 @@ def get_checkbox_value(soup: BeautifulSoup | Tag, eid: str) -> bool:
     return value == "true"
 
 
-def element_exists(soup: BeautifulSoup | Tag, tagty: str, eid: str) -> bool:
+def element_exists_by_id(soup: BeautifulSoup | Tag, tagty: str, eid: str) -> bool:
     """Check if an element with a given ID exists"""
     return isinstance(find_tag(soup, tagty, {"id": eid}), Tag)
 
@@ -245,7 +245,9 @@ def get_field_value(form: Tag, id: str) -> str | bool:
     return result
 
 
-def get_input_value(s: BeautifulSoup, type: Literal["checkbox", "text"], id: str) -> str:
+def get_input_value(
+    s: BeautifulSoup, type: Literal["checkbox", "text"], id: str
+) -> str:
     """
     Get the value of an input field based on its type and ID.
     """
@@ -256,7 +258,9 @@ def get_radio_value(s: BeautifulSoup, name: str) -> str:
     """
     Get the value of a radio field based on its name
     """
-    return get_value(find_tag_f(s, "input", {"type": "radio", "name": name, "checked": ""}))
+    return get_value(
+        find_tag_f(s, "input", {"type": "radio", "name": name, "checked": ""})
+    )
 
 
 # ---------------------------------------------------------------------------- #
@@ -355,7 +359,8 @@ def parse_firewall_rules(soup: BeautifulSoup) -> dict[str, Any]:
     result: dict[str, Any] = {k: getinpt(soup, GENERAL_KEYS[k]) for k in GENERAL_KEYS}
 
     result["rules"] = [
-        parse_firewall_rules(row) for row in find_tags(soup, "tr", {"class": ["odd", "even"]})
+        parse_firewall_rules(row)
+        for row in find_tags(soup, "tr", {"class": ["odd", "even"]})
     ]
 
     return result
@@ -607,7 +612,8 @@ def parse_ldap_settings(soup: BeautifulSoup) -> dict[str, Any]:
 
     logger.debug("/// Parsing global settings...")
     result["config"] = {
-        key: get_text_of(table, "td", {"id": GLOBAL_SETTINGS[key]}) for key in GLOBAL_SETTINGS
+        key: get_text_of(table, "td", {"id": GLOBAL_SETTINGS[key]})
+        for key in GLOBAL_SETTINGS
     }
 
     table = find_table(soup, {"id": LDAP_SERVER_LIST_NAME})
@@ -639,7 +645,10 @@ def parse_ldap_settings(soup: BeautifulSoup) -> dict[str, Any]:
     groupmaps = {}
     logger.debug("/// Parsing group mappings...")
     for row in list:
-        r = {key: get_text_of(row, "td", {"id": GROUP_MAPPINGS[key]}) for key in GROUP_MAPPINGS}
+        r = {
+            key: get_text_of(row, "td", {"id": GROUP_MAPPINGS[key]})
+            for key in GROUP_MAPPINGS
+        }
 
         if r["role"] not in groupmaps:
             groupmaps[r["role"]] = []
@@ -836,7 +845,10 @@ def parse_certificates_basic(soup: BeautifulSoup) -> dict[str, Any]:
     rows = get_table_rows(table)
 
     for row in rows:
-        x = {k: get_text_of(row, "td", {"class": f"x509_{BASIC_DATA[k]}"}) for k in BASIC_DATA}
+        x = {
+            k: get_text_of(row, "td", {"class": f"x509_{BASIC_DATA[k]}"})
+            for k in BASIC_DATA
+        }
 
         name = x["name"]
         del x["name"]
@@ -864,10 +876,14 @@ def parse_global_web_server_config(soup: BeautifulSoup) -> dict[str, Any]:
         "cert": cert,
     }
 
-    if element_exists(table, "input", "ServicePortEnabled"):
+    if element_exists_by_id(table, "input", "ServicePortEnabled"):
         result["service_port"] = {}
-        result["service_port"]["enabled"] = get_checkbox_value(table, "ServicePortEnabled")
-        result["service_port"]["port"] = int(get_txt_input_value(table, "ServicePortNumber"))
+        result["service_port"]["enabled"] = get_checkbox_value(
+            table, "ServicePortEnabled"
+        )
+        result["service_port"]["port"] = int(
+            get_txt_input_value(table, "ServicePortNumber")
+        )
 
     return result
 
@@ -946,7 +962,9 @@ def parse_user_info(dev: DeviceData, soup: BeautifulSoup) -> dict[str, Any]:
     row = find_tag_f(table, "tr", {"id": result["username"]})
 
     for field in USER_TABLE_FIELDS:
-        result[field] = get_text_of(row, "div", {"class": USER_TABLE_FIELDS[field]}) or "N/A"
+        result[field] = (
+            get_text_of(row, "div", {"class": USER_TABLE_FIELDS[field]}) or "N/A"
+        )
 
     return {result["username"]: result}
 
@@ -1018,7 +1036,9 @@ def parse_static_routes(soup: BeautifulSoup) -> dict[str, Any]:
     return {
         id: data
         for id, data in extract_rows(
-            get_table_rows(find_table(soup, {"id": "staticRoute", "class": "fieldList"}))
+            get_table_rows(
+                find_table(soup, {"id": "staticRoute", "class": "fieldList"})
+            )
         )
     }
 
@@ -1035,7 +1055,9 @@ def parse_host_keys(soup: BeautifulSoup) -> dict[str, Any]:
         "rsa_pubkey": "pubRSA",
     }
 
-    result = {f: get_text_of(find_tag_f(soup, "form", {"id": FORMS[f]}), "pre") for f in FORMS}
+    result = {
+        f: get_text_of(find_tag_f(soup, "form", {"id": FORMS[f]}), "pre") for f in FORMS
+    }
 
     return result
 
@@ -1268,7 +1290,9 @@ def parse_radius_settings(soup: BeautifulSoup) -> dict[str, Any]:
     for checkbox in SETTINGS_TABLE_CHECKBOXES:
         result[checkbox] = (
             get_attrib(
-                find_tag_f(table, "input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]}),
+                find_tag_f(
+                    table, "input", {"name": SETTINGS_TABLE_CHECKBOXES[checkbox]}
+                ),
                 "checked",
             )
             == "checked"
