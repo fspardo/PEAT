@@ -12,6 +12,9 @@ from bs4.element import Tag
 
 from ..sel_http import SELHTTP, Response
 
+# A list of endpoint names available in the `ENDPOINTS` dictionary.
+#
+# This list may not be exhaustive.
 AVAILABLE_ENDPOINTS = Literal[
     # Commissioning
     "commissioning",
@@ -55,6 +58,9 @@ AVAILABLE_ENDPOINTS = Literal[
     "proxy_reports",
 ]
 
+# Dictionary mapping endpoint names to actual endpoint URLs.
+#
+# Like `AVAILABLE_ENDPOINTS`, this may not be exhaustive.
 ENDPOINTS: Final[
     dict[
         AVAILABLE_ENDPOINTS,
@@ -106,8 +112,16 @@ ENDPOINTS: Final[
 
 class HTTP362X(SELHTTP):
     """
-    Class specialization of `SELHTTP` for the SEL-3622.
+    Class specialization of `SELHTTP` for the SEL-3622/3620.
+
+    Though not super-specialized, it changes some behaviors to accommodate the requirements of this module.
     """
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Ensure HTTPS"""
+        super().__init__(*args, **kwargs)
+
+        self.protocol = "https"
 
     def get(self, *args, **kwargs) -> Response | None:
         if "use_cache" not in kwargs:
@@ -152,7 +166,9 @@ class HTTP362X(SELHTTP):
         """Checks if the SELSSID token is required to log in"""
         return isinstance(soup.find("input", {"name": "SELSESSID", "type": "hidden"}), Tag)
 
-    def login(self, user: str = "admin", passwd: str = "Admin123!") -> bool:
+    def login(
+        self, user: str = "admin", passwd: str = "Admin123!", login_timeout: int = 10
+    ) -> bool:
         """
         Attempt to log in using the SEL-3622 Gateway's web interface.
 
@@ -160,7 +176,6 @@ class HTTP362X(SELHTTP):
         the browser on first connection.
         """
 
-        self.protocol = "https"
         # We only need login data and the Submit button
         login_data = {
             "Username": user,
@@ -187,7 +202,9 @@ class HTTP362X(SELHTTP):
 
         # NOTE: attempting to log in with a short timeout will fail.
         # At least 10 seconds will suffice.
-        resp = self.post(self.endpoint("login"), data=login_data, timeout=max(self.timeout, 10))
+        resp = self.post(
+            self.endpoint("login"), data=login_data, timeout=max(self.timeout, login_timeout)
+        )
 
         # Null response means no host
         if not resp:

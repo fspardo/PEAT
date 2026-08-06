@@ -16,7 +16,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-from peat import DeviceData, DeviceModule, IPMethod, Service, exit_handler
+from peat import DeviceData, DeviceModule, IPMethod, Service, exit_handler, User
 
 from ..relay_parse import parse_fid
 from . import sel362x_pull as p
@@ -25,15 +25,45 @@ from .sel362x_http import HTTP362X
 
 def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
     """Summarize the contents of the full web config."""
+    web_cert: str | None = None
+
+    roles: dict[str, set[str]] = {}
+    if "local_groups" in data:
+        lg = data["local_groups"]
+        for g in lg:
+            for name in lg[g]:
+                if name not in roles:
+                    roles[name] = set()
+                roles[name].add(g)
+
     if "users" in data:
         for username in data["users"]:
+            ud = data["users"][username]
+
+            perms = set()
+            if ud["admin"]:
+                perms.add("admin")
+            if ud["enabled"]:
+                perms.add("enabled")
+
+            udata = User(
+                email=ud["email"],
+                full_name=f"{ud['first_name']} {ud['last_name']}",
+                name=username,
+                permissions=perms,
+                roles=roles[username],
+            )
+
+            dev.users.append(udata)
             dev.related.user.add(username)
+            if ud["email"] != "N/A":
+                dev.related.emails.add(ud["email"])
 
     if "network" in data:
         for addr in data["network"]["addresses"]:
             addr: str = data["network"]["addresses"][addr]["address"]
             addr = addr.split("/")[0]
-            
+
             dev.related.ip.add(addr)
         if "hostname" in data["network"]["global"]:
             dev.related.hosts.add(data["network"]["global"]["hostname"])
@@ -56,6 +86,7 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
             )
 
             dev.related.ip.add(ip)
+            web_cert = data["web_server"]["cert"]
 
     if "version_information" in data:
         dev.firmware.version = data["version_information"]["version"]
@@ -63,6 +94,22 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
         dev.firmware.extra["serial_number"] = data["version_information"][
             "serial_number"
         ]
+
+    if "ldap" in data:
+        for server in data["ldap"]["servers"]:
+            dev.related.hosts.add(server)
+
+        for role in data["ldap"]["group_mappings"]:
+            dev.related.roles.add(role)
+
+    if "syslog_settings" in data:
+        for dst in data["syslog_settings"]["destinations"]:
+            dev.related.ip.add(dst["ip"])
+
+    if "certificates" in data and web_cert:
+        cert = data["certificates"][web_cert]
+
+
 
 
 class AdvancedRange(BaseModel):
@@ -204,8 +251,13 @@ class SEL362X(DeviceModule):
                 user = cls.default_options["web"]["user"]
                 passwd = cls.default_options["web"]["pass"]
 
-        cls.log.debug(f"Attempting log-in as {user}/{passwd}")
-        if not session.login(str(user), str(passwd)):
+        login_timeout = dev.options.get("login_timeout")
+        login_timeout = int(login_timeout) if login_timeout else 10
+
+        cls.log.debug(
+            f"Attempting log-in as {user} with a timeout of {login_timeout} seconds"
+        )
+        if not session.login(str(user), str(passwd), login_timeout):
             cls.log.error("Failed to log in to the device!")
             return None
         else:

@@ -3,7 +3,7 @@ import csv
 import re
 import zlib
 from pathlib import PurePath, PurePosixPath
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 import olefile
 from dateutil.parser import parse as date_parse
@@ -1298,21 +1298,18 @@ def extract_string(data: bytes | str, regex: str, flags=None) -> str:
     return ""
 
 
-PARSE_FID_FIELDS = Literal[
-    "id",
-    "version",
-    "revision",
-    "settings_version",
-    "release_date",
-    "model",
-    "product",
-]
-
-
 def parse_fid(
     id_string: str,
 ) -> dict[
-    PARSE_FID_FIELDS,
+    Literal[
+        "id",
+        "version",
+        "revision",
+        "settings_version",
+        "release_date",
+        "model",
+        "product",
+    ],
     str,
 ]:
     """

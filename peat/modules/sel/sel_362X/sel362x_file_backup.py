@@ -10,19 +10,23 @@ Author: Francisco Santana
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Final
-from pydantic import BaseModel
 
 from bs4.element import Tag
 from loguru import logger as log
+from pydantic import BaseModel
 
 from peat.data.models import DeviceData
 
 from .sel362x_http import ENDPOINTS, HTTP362X
 from .sel362x_pull import (
-    find_tag_f as find_tag,
+    element_exists_by_id,
     get_text_of,
     get_text_of_f,
-    element_exists_by_id,
+)
+from .sel362x_pull import (
+    find_tag_f as find_tag,
+)
+from .sel362x_pull import (
     get_attrib_f as get_attrib,
 )
 
@@ -88,9 +92,7 @@ def sys_settings_form_generate(
     return result
 
 
-def sys_settings_form_export(
-    token: str, version: int
-) -> dict[str, tuple[str | None, str]]:
+def sys_settings_form_export(token: str, version: int) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Export" data
     """
@@ -122,9 +124,7 @@ def single_file_form_generate(
     return result
 
 
-def single_file_form_export(
-    token: str, version: int
-) -> dict[str, tuple[str | None, str]]:
+def single_file_form_export(token: str, version: int) -> dict[str, tuple[str | None, str]]:
     """
     Create a form populated with the requisite "Export" data
     """
@@ -188,9 +188,7 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
     old_hash = get_text_of_f(soup, "span", {"id": SYSTEM_SETTINGS_HASH_ID})
     token = get_attrib(find_tag(soup, "input", {"type": "hidden", "id": "t"}), "value")
     current_version = get_text_of_f(soup, "span", {"id": "display_CurrentVersion"})
-    previous_version = (
-        get_text_of(soup, "span", {"id": "display_PreviousVersion"}) or "N/A"
-    )
+    previous_version = get_text_of(soup, "span", {"id": "display_PreviousVersion"}) or "N/A"
 
     last_sys_cfg_upload = get_text_of_f(
         soup,
@@ -198,9 +196,7 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
         {"id": ["display_systemSettingsImportHash", "currentSystemFileImportHash"]},
     )
 
-    conn_dir_hash = get_text_of_f(
-        soup, "span", {"id": "display_connectionDirectoryHash"}
-    )
+    conn_dir_hash = get_text_of_f(soup, "span", {"id": "display_connectionDirectoryHash"})
 
     return {
         "old_hash": old_hash,
@@ -304,12 +300,8 @@ class SystemSettingsPoller:
         # Post the endpoint with a request to generate the form
         response = self.http.post_endpoint(
             "file_management",
-            files=sys_settings_form_generate(
-                password, self.token, self.dev._cache["VERSION"]
-            ),
-            headers={
-                "Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
-            },
+            files=sys_settings_form_generate(password, self.token, self.dev._cache["VERSION"]),
+            headers={"Referer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
         )
 
         # Handle POST request errors
@@ -367,9 +359,7 @@ class SystemSettingsPoller:
         response = self.http.post_endpoint(
             "file_management",
             files=sys_settings_form_export(self.token, self.dev._cache["VERSION"]),
-            headers={
-                "Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"
-            },
+            headers={"Referrer": f"https://{self.http.ip}/{ENDPOINTS['file_management']}"},
         )
 
         if not response:
