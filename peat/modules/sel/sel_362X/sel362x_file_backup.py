@@ -18,6 +18,13 @@ from loguru import logger as log
 from peat.data.models import DeviceData
 
 from .sel362x_http import ENDPOINTS, HTTP362X
+from .sel362x_pull import (
+    find_tag_f as find_tag,
+    get_text_of,
+    get_text_of_f,
+    element_exists_by_id,
+    get_attrib_f as get_attrib,
+)
 
 # Variants of the class for the system settings hash
 SYSTEM_SETTINGS_HASH_ID: Final[list[str]] = [
@@ -137,8 +144,8 @@ class SystemSettings(BaseModel):
     """
 
     # Fields to do with system settings
-    prev_hash: str
-    hash: str
+    prev_sys_settings_hash: str
+    curr_sys_settings_hash: str
     password: str
     data: str
     time: str
@@ -165,6 +172,7 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
     - The token required to initiate a backup file generation *and*
       download a copy of the generated backup file
     """
+
     response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
@@ -177,68 +185,34 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
 
     soup = http.gen_soup(response.text)
 
-    old_hash = soup.find("span", {"id": SYSTEM_SETTINGS_HASH_ID})
+    old_hash = get_text_of_f(soup, "span", {"id": SYSTEM_SETTINGS_HASH_ID})
+    token = get_attrib(find_tag(soup, "input", {"type": "hidden", "id": "t"}), "value")
+    current_version = get_text_of_f(soup, "span", {"id": "display_CurrentVersion"})
+    previous_version = (
+        get_text_of(soup, "span", {"id": "display_PreviousVersion"}) or "N/A"
+    )
 
-    if not isinstance(old_hash, Tag):
-        http.log.error("Could not get old hash")
-        return None
-
-    oh = old_hash.get_text(strip=True)
-
-    token = soup.find("input", {"type": "hidden", "id": "t"})
-
-    if not isinstance(token, Tag):
-        http.log.error("Could not get token")
-        return None
-
-    tkn = token.attrs["value"]
-
-    current_version = soup.find("span", {"id": "display_CurrentVersion"})
-
-    if not isinstance(current_version, Tag):
-        http.log.error("Could not get current version")
-        return None
-
-    cv = current_version.get_text(strip=True)
-
-    previous_version = soup.find("span", {"id": "display_PreviousVersion"})
-
-    pv = "N/A"
-    if isinstance(previous_version, Tag):
-        pv = previous_version.get_text(strip=True)
-
-    last_uploaded_cfg = soup.find(
+    last_sys_cfg_upload = get_text_of_f(
+        soup,
         "span",
         {"id": ["display_systemSettingsImportHash", "currentSystemFileImportHash"]},
     )
 
-    if not isinstance(last_uploaded_cfg, Tag):
-        http.log.error("Could not get the last uploaded configuration file's hash")
-        return None
-
-    luch = last_uploaded_cfg.get_text(strip=True)
-
-    conn_dir_hash = soup.find("span", {"id": "display_connectionDirectoryHash"})
-
-    if not isinstance(conn_dir_hash, Tag):
-        http.log.error(
-            "Could not get the last uploaded connection directory configuration hash"
-        )
-        return None
-
-    cdh = conn_dir_hash.get_text(strip=True)
+    conn_dir_hash = get_text_of_f(
+        soup, "span", {"id": "display_connectionDirectoryHash"}
+    )
 
     return {
-        "old_hash": oh,
-        "token": tkn,
-        "current_version": cv,
-        "previous_version": pv,
-        "last_uploaded_hash": luch,
-        "connection_directory_hash": cdh,
+        "old_hash": old_hash,
+        "token": token,
+        "current_version": current_version,
+        "previous_version": previous_version,
+        "last_system_settings_import_hash": last_sys_cfg_upload,
+        "connection_directory_hash": conn_dir_hash,
     }
 
 
-def pull_hash(http: HTTP362X) -> str | None:
+def pull_generated_system_settings_hash(http: HTTP362X) -> str | None:
     """
     Pulls the current hash of the last generated configuration file.
 
@@ -256,13 +230,11 @@ def pull_hash(http: HTTP362X) -> str | None:
 
     soup = http.gen_soup(response.text)
 
-    hash = soup.find("span", {"id": SYSTEM_SETTINGS_HASH_ID})
+    return get_text_of_f(soup, "span", {"id": SYSTEM_SETTINGS_HASH_ID})
 
-    if not isinstance(hash, Tag):
-        http.log.error("Could not get old hash log")
-        return None
 
-    return hash.get_text(strip=True)
+# TODO: functions to pull the hashes from the Single File Backup tab on R212 of the firmware
+# Should be possible on either device
 
 
 def get_password(dev: DeviceData) -> str:
@@ -275,7 +247,6 @@ def get_password(dev: DeviceData) -> str:
     compressed, encrypted, Base64 representation of the file.
     """
 
-    
     pw = dev.options.get("password")
 
     if pw:
@@ -310,6 +281,13 @@ class SystemSettingsPoller:
         """
         Queue the generation of the system settings file.
         """
+
+        # TODO: initiate the generation of the Single File Backup on R212 of the firmware.
+        #
+        # Check `self.dev._cache["VERSION"]` to get the revision of the firmware (int part only)
+        # to see if such a file *should* be generated.
+        #
+        # Additionally, get the hashes of the last generated "single file backup" files.
 
         log.info("Preparing a configuration file snapshot...")
 
@@ -361,12 +339,12 @@ class SystemSettingsPoller:
         self.password = password
         self.current_version = info["current_version"]
         self.previous_version = info["previous_version"]
-        self.ss_last_uploaded_hash = info["last_uploaded_hash"]
+        self.ss_last_uploaded_hash = info["last_system_settings_import_hash"]
         self.connection_directory_hash = info["connection_directory_hash"]
 
         return True
 
-    def query(self, force: bool = False) -> SystemSettings | bool:
+    def query_system_settings(self, force: bool = False) -> SystemSettings | bool:
         """
         Query the status of the system settings file.
 
@@ -380,7 +358,7 @@ class SystemSettingsPoller:
             log.error("Settings not queued!")
             return False
 
-        hash = pull_hash(self.http)
+        hash = pull_generated_system_settings_hash(self.http)
 
         if not force and hash == self.old_hash:
             log.debug("No change to hash")
@@ -417,8 +395,8 @@ class SystemSettingsPoller:
             return False
 
         return SystemSettings(
-            prev_hash=self.old_hash,
-            hash=hash,
+            prev_sys_settings_hash=self.old_hash,
+            curr_sys_settings_hash=hash,
             password=self.password,
             data=response.content.decode(),
             time=gen_time,
@@ -428,6 +406,8 @@ class SystemSettingsPoller:
             last_uploaded_config_hash=self.ss_last_uploaded_hash,
             connection_directory_hash=self.connection_directory_hash,
         )
+
+    # TODO: write a function to pull the single file backup
 
 
 def initialize_file_management_pull(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
@@ -484,8 +464,8 @@ def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
     return {
         "system_settings_backup": {
             "last_uploaded_hash": sys_settings.last_uploaded_config_hash,
-            "old_hash": sys_settings.prev_hash,
-            "new_hash": sys_settings.hash,
+            "old_system_settings_export_hash": sys_settings.prev_sys_settings_hash,
+            "new_system_settings_export_hash": sys_settings.curr_sys_settings_hash,
             "file_name": sys_settings.file_name,
             "config_archive": sys_settings.data,
             "password": sys_settings.password,
