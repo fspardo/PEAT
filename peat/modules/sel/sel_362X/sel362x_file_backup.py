@@ -432,12 +432,17 @@ def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
 
     # Query periodically up to a maximum number of times.
     # Querying this way ensures we do not retrieve an outdated version of the backup
-    ssb_opt = dev.options["system_settings_backup"]
     queries = MAX_QUERIES
+    delay = 10
+    ssb_opt = dev.options["system_settings_backup"]
     if ssb_opt:
         q = ssb_opt.get("pull_attemts")
         if q:
             queries = int(q)
+
+        d = ssb_opt.get("pull_attempt_delay")
+        if d:
+            delay = float(d)
 
     for i in range(0, queries):
         log.debug(f"Query {i + 1} of {queries}...")
@@ -451,7 +456,7 @@ def pull_file_management(dev: DeviceData, http: HTTP362X) -> dict[str, Any]:
         if not sys_settings:
             raise Exception("Error in querying system settings")
 
-        sleep(10)
+        sleep(delay)
 
     # Odds are, if it has failed after multiple attempts, then there were
     # no changes to the backup file.

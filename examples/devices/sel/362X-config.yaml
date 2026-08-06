@@ -35,4 +35,7 @@ hosts:
         #
         # This is necessary because the "last-generated backup file hash" value won't change until
         # the backup file is generated (assuming that the configuration changed between generations)
-        pull_attempts: 10 
+        pull_attempts: 10
+
+        # How long to wait, in seconds, between attempts to pull the system settings backup file
+        pull_attempt_delay: 10 
