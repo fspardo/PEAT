@@ -172,7 +172,6 @@ def pull_info(http: HTTP362X) -> dict[str, str] | None:
     - The token required to initiate a backup file generation *and*
       download a copy of the generated backup file
     """
-
     response = http.get_endpoint("file_management", use_cache=False)
 
     if not response:
