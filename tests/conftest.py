@@ -41,7 +41,7 @@ config.RESOLVE_HOSTNAME = False
 atexit.unregister(exit_handler.run_handlers)
 
 
-# This adds "--run-slow" and "--run-ci" as valid pytest CLI arguments
+# This adds "--run-slow", "--run-ci", "--run-broadcast-ci", and "--run-container" pytest arguments
 # https://docs.pytest.org/en/latest/example/simple.html
 def pytest_addoption(parser):
     parser.addoption("--run-slow", action="store_true", default=False, help="run slow tests")
@@ -57,28 +57,36 @@ def pytest_addoption(parser):
         default=False,
         help="run live broadcast tests intended to be used in GitLab CI on PEAT rack",
     )
+    parser.addoption(
+        "--run-container",
+        action="store_true",
+        default=False,
+        help="run container integration tests targeting a docker instance",
+    )
 
 
 def pytest_collection_modifyitems(config, items):
-    # If --run-slow is not given in cli then skip
-    # slow tests labelled with "pytest.mark.slow()".
-    # Setting the environment variable "RUN_SLOW"
-    # will also work to run the slow tests.
+    # -------------------------------------------------------------
+    # Slow Tests Handling
+    # -------------------------------------------------------------
+    # If --run-slow is not given in cli then skip slow tests labelled with "pytest.mark.slow()".
+    # Setting the environment variable "RUN_SLOW" will also work to run the slow tests.
     if not config.getoption("--run-slow") and not (os.environ.get("RUN_SLOW") is not None):
         skip_slow = pytest.mark.skip(reason="need --run-slow option to run")
         for item in items:
             if "slow" in item.keywords:
                 item.add_marker(skip_slow)
 
-    # Tests marked with "pytest.mark.gitlab_ci_only()"
-    # will only be run if the "GITLAB_CI" environment
-    # variable is present or if the CLI argument
-    # "--run-ci" is given to pytest.
-    # Tests that run only in CI should use system environment
-    # variables to get their arguments (e.g. IP addresses).
-    # The "GITLAB_CI" variable is automatically set by GitLab CI runners
+    # -------------------------------------------------------------
+    # GitLab CI Only Tests Handling
+    # -------------------------------------------------------------
+    # Tests marked with "pytest.mark.gitlab_ci_only()" will only be run if the "GITLAB_CI"
+    # environment variable is present or if the CLI argument "--run-ci" is given to pytest.
+    # Tests that run only in CI should use system environment variables to get their
+    # arguments (e.g. IP addresses).
+    # The "GITLAB_CI" variable is automatically set by GitLab CI runners.
     if not config.getoption("--run-ci") and (
-        "live-tests" not in os.environ.get("CI_JOB_STAGE", "")
+        "container-tests" not in os.environ.get("CI_JOB_STAGE", "")
     ):
         skip_ci = pytest.mark.skip(
             reason="only run when run on a GitLab CI runner in "
@@ -88,6 +96,9 @@ def pytest_collection_modifyitems(config, items):
             if "gitlab_ci_only" in item.keywords:
                 item.add_marker(skip_ci)
 
+    # -------------------------------------------------------------
+    # Broadcast CI Tests Handling
+    # -------------------------------------------------------------
     # Tests marked with "pytest.mark.broadcast_ci()"
     if not config.getoption("--run-broadcast-ci"):
         skip_broadcast_ci = pytest.mark.skip(
@@ -96,6 +107,17 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "broadcast_ci" in item.keywords:
                 item.add_marker(skip_broadcast_ci)
+
+    # -------------------------------------------------------------
+    # Container Tests Handling
+    # -------------------------------------------------------------
+    # Tests marked with "pytest.mark.container()" will be skipped by default
+    # unless the CLI argument "--run-container" is explicitly provided.
+    if not config.getoption("--run-container"):
+        skip_container = pytest.mark.skip(reason="only run when --run-container is specified")
+        for item in items:
+            if "container" in item.keywords:
+                item.add_marker(skip_container)
 
 
 def pytest_assertrepr_compare(op, left, right):  # noqa: ARG001
