@@ -12,15 +12,26 @@ Authors:
 from copy import deepcopy as clone
 from time import sleep
 from types import FunctionType
-from typing import Any, Optional
+from typing import Any, Optional, Callable
+from datetime import datetime
 
 from pydantic import BaseModel
 
-from peat import DeviceData, DeviceModule, IPMethod, Service, exit_handler, User
+from peat import DeviceData, DeviceModule, IPMethod, Service, Interface, User
 
 from ..relay_parse import parse_fid
 from . import sel362x_pull as p
 from .sel362x_http import HTTP362X
+
+from hashlib import md5, sha1, sha256, sha512, _Hash
+from pathlib import Path
+
+
+def do_hash(hcons: Callable[..., _Hash], data: str) -> str:
+    """Get a HASH object from `hcons`, then make a digest of `data`"""
+    hobj = hcons(usedforescurity=False)
+    hobj.update(data.encode())
+    return hobj.hexdigest()
 
 
 def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
@@ -28,6 +39,8 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
     web_cert: str | None = None
 
     roles: dict[str, set[str]] = {}
+    # Fetch local groups to use as roles
+    # Convert from group-to-user surjective to user-to-group surjective
     if "local_groups" in data:
         lg = data["local_groups"]
         for g in lg:
@@ -36,15 +49,20 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
                     roles[name] = set()
                 roles[name].add(g)
 
+    # Convert the list of users to an appropriate data model
     if "users" in data:
         for username in data["users"]:
             ud = data["users"][username]
 
+            # "admin" perms for admin rights
             perms = set()
             if ud["admin"]:
                 perms.add("admin")
+            # "enabled" perms for enabled, "disabled" perms otherwise
             if ud["enabled"]:
                 perms.add("enabled")
+            else:
+                perms.add("disabled")
 
             udata = User(
                 email=ud["email"],
@@ -60,13 +78,34 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
                 dev.related.emails.add(ud["email"])
 
     if "network" in data:
-        for addr in data["network"]["addresses"]:
-            addr: str = data["network"]["addresses"][addr]["address"]
+        ips = {}
+        for alias in data["network"]["addresses"]:
+            addr: str = data["network"]["addresses"][alias]["address"]
             addr = addr.split("/")[0]
 
             dev.related.ip.add(addr)
+
+            iface = data["network"]["addresses"][alias]["interface"]
+            if iface not in ips:
+                ips[iface] = addr
+
         if "hostname" in data["network"]["global"]:
             dev.related.hosts.add(data["network"]["global"]["hostname"])
+
+        if "gateway" in data["network"]["global"]:
+            dev.related.ip.add(data["network"]["global"]["gateway"])
+
+        for iface in data["network"]["interfaces"]:
+            idata = data["network"]["interfaces"][iface]
+            id = Interface(
+                alias=iface,
+                enabled=idata["status"] == "Enabled",
+                type="ethernet",
+                physical=True,
+            )
+            if iface in ips:
+                id.ip = ips[iface]
+            dev.interface.append(id)
 
     if "web_server" in data:
         port = data["web_server"]["port"]
@@ -88,6 +127,16 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
             dev.related.ip.add(ip)
             web_cert = data["web_server"]["cert"]
 
+    if "static_routes" in data:
+        sr = data["static_routes"]
+
+        for id in sr:
+            d = sr[id]
+            if "gateway_address" in d:
+                dev.related.ip.add(d["gateway_address"])
+
+            dev.related.ip.add(d["network"].split("/")[0])
+
     if "version_information" in data:
         dev.firmware.version = data["version_information"]["version"]
         dev.firmware.extra["fid"] = data["version_information"]["fid"]
@@ -102,14 +151,91 @@ def webcfg_summarize(dev: DeviceData, data: dict[str, Any]):
         for role in data["ldap"]["group_mappings"]:
             dev.related.roles.add(role)
 
+    if "snmp" in data:
+        servers = data["snmp"]["servers"]
+
+        for server in servers:
+            dev.related.ip.add(server["address"])
+
     if "syslog_settings" in data:
         for dst in data["syslog_settings"]["destinations"]:
             dev.related.ip.add(dst["ip"])
 
     if "certificates" in data and web_cert:
-        cert = data["certificates"][web_cert]
+        cert: dict[str, str] | None = None
+        if web_cert not in data["certificates"] and web_cert == "Default":
+            cert = data["certificates"]["Default_Web_Cert"]
+        elif web_cert in data["certificates"]:
+            cert = data["certificates"][web_cert]
 
+        if cert:
+            dev.x509.alternative_names = cert["subject_alt_names"].split(",")
 
+            if cert["file"] and (dev.get_out_dir() / cert["file"]).exists():
+                certdata = (dev.get_out_dir() / cert["file"]).read_text()
+                dev.x509.hash.md5 = do_hash(md5, certdata)
+                dev.x509.hash.sha1 = do_hash(sha1, certdata)
+                dev.x509.hash.sha256 = do_hash(sha256, certdata)
+                dev.x509.hash.sha512 = do_hash(sha512, certdata)
+
+                dev.x509.original = certdata
+
+            dev.x509.issuer.common_name = cert["issuer_common_name"]
+            dev.x509.issuer.country = cert["issuer_country"]
+            dev.x509.issuer.state_or_province = cert["issuer_state"]
+            dev.x509.issuer.locality = cert["issuer_locality"]
+            dev.x509.issuer.organization = cert["issuer_org_name"]
+            dev.x509.issuer.organizational_unit = cert["issuer_org_unit_name"]
+            dev.x509.issuer.distinguished_name = cert["issuer_subject"]
+
+            dev.x509.not_before = datetime.fromisoformat(cert["valid_start"])
+            dev.x509.not_after = datetime.fromisoformat(cert["valid_end"])
+
+            dev.x509.subject.common_name = cert["common_name"]
+            dev.x509.subject.country = cert["country"]
+            dev.x509.subject.state_or_province = cert["state"]
+            dev.x509.subject.locality = cert["locality"]
+            dev.x509.subject.organization = cert["org_name"]
+            dev.x509.subject.organizational_unit = cert["org_unit_name"]
+            dev.x509.subject.distinguished_name = cert["subject"]
+
+            dev.x509.version_number = cert["version"]
+            dev.x509.serial_number = cert["serial_number"]
+
+        if "serial_ports" in data:
+            for port in data["serial_ports"]:
+                pdata = data["serial_ports"][port]
+                dev.interface.append(
+                    Interface(
+                        alias=port,
+                        enabled=pdata["state"] == "Enabled",
+                        type="serial",
+                        physical=True,
+                        baudrate=int(pdata["baud_rate"]),
+                        data_bits=int(pdata["data_bits"]),
+                        parity=pdata["parity"],
+                        stop_bits=pdata["stop_bits"],
+                        flow_control=pdata["hw_flow_control"],
+                    )
+                )
+
+        if "radius" in data:
+            if data["radius"]["primary_server"]:
+                dev.related.ip.add(data["radius"]["primary_server"])
+            if data["radius"]["secondary_server"]:
+                dev.related.ip.add(data["radius"]["secondary_server"])
+
+        if "diagnostics" in data:
+            d = data["diagnostics"]
+
+            if "free_memory" in d:
+                mem = d["free_memory"]
+
+                dev.hardware.memory_available = mem["physical"]["free"]
+                dev.hardware.memory_total = mem["physical"]["total"]
+            if "process_list" in d:
+                for p in d["process_list"]:
+                    dev.related.process = p["command"]
 
 
 class AdvancedRange(BaseModel):

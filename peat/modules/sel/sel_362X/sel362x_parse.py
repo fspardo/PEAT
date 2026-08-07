@@ -780,7 +780,7 @@ def parse_local_groups(soup: BeautifulSoup) -> dict[str, Any]:
 #                                   X509.sel                                   #
 # ---------------------------------------------------------------------------- #
 
-
+# TODO: Convert to using the X509 data model
 def parse_certificates_advanced(soup: BeautifulSoup) -> dict[str, Any]:
     """More advanced parsing for more advanced data"""
     ADVANCED_DATA = {
